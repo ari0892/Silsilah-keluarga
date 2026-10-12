@@ -33,20 +33,13 @@
       z-index: 1;
     }
 
-    /* Style Garis Silsilah Dipertegas & Degradasi */
+    /* Garis silsilah: warna solid per generasi (diatur lewat JS) */
+    #tree svg path[data-l-id],
     [data-bft-link] {
-      stroke-width: 4px !important;
+      stroke-width: 3px !important;
       stroke-linecap: round;
-      filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.45));
-      transition: stroke 0.3s ease, stroke-width 0.3s ease;
+      stroke-linejoin: round;
     }
-    .link-gen-1 { stroke: #f59e0b !important; }
-    .link-gen-2 { stroke: #6366f1 !important; }
-    .link-gen-3 { stroke: #0284c7 !important; }
-    .link-gen-4 { stroke: #10b981 !important; }
-    .link-gen-5 { stroke: #f97316 !important; }
-    .link-gen-6 { stroke: #14b8a6 !important; }
-    .link-gen-7 { stroke: #a855f7 !important; }
 
     /* Custom Scrollbar */
     ::-webkit-scrollbar {
@@ -64,14 +57,6 @@
       background: rgba(148, 163, 184, 0.8);
     }
 
-    /* Balkan Tree Node Styling */
-    .bft-node {
-      cursor: pointer;
-      transition: transform 0.2s ease;
-    }
-    .bft-node:hover {
-      filter: brightness(1.08);
-    }
   </style>
 </head>
 <body class="text-slate-100 select-none">
@@ -247,7 +232,7 @@
     <div class="p-6 overflow-y-auto flex-1 space-y-5 text-sm">
       <div class="flex flex-col items-center text-center">
         <div class="relative">
-          <img id="drawerAvatar" data-g="male" onerror="window.photoFallback&&photoFallback(this)" alt="Avatar" class="w-28 h-28 rounded-2xl object-cover border-4 border-slate-700 shadow-lg" />
+          <img id="drawerAvatar" referrerpolicy="no-referrer" data-g="male" onerror="window.photoFallback&&photoFallback(this)" alt="Avatar" class="w-28 h-28 rounded-2xl object-cover border-4 border-slate-700 shadow-lg" />
           <span id="drawerGenderIcon" class="absolute bottom-1 right-1 w-7 h-7 rounded-full flex items-center justify-center text-white text-xs border-2 border-slate-900 bg-blue-500">
             <i class="fa-solid fa-mars"></i>
           </span>
@@ -339,7 +324,7 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-slate-300 font-semibold mb-1">Jenis Kelamin</label>
-            <select id="formGender" onchange="if(!document.getElementById('formPhoto').value) setFormPhoto('')" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none">
+            <select id="formGender" onchange="refreshFormPhotoPreview()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none">
               <option value="male">Laki-laki (Ayah / Putra)</option>
               <option value="female">Perempuan (Ibu / Putri)</option>
             </select>
@@ -404,21 +389,22 @@
           </select>
         </div>
 
-        <!-- Foto Anggota -->
-        <div>
-          <label class="block text-slate-300 font-semibold mb-1">Foto Anggota (Opsional)</label>
+        <!-- Foto Anggota (file foto disimpan terpisah di Google Drive) -->
+        <div class="p-3 bg-slate-800/50 rounded-xl border border-slate-700/80 space-y-2.5">
+          <label class="block text-slate-300 font-semibold"><i class="fa-brands fa-google-drive text-emerald-400 mr-1"></i> Foto Anggota (Opsional)</label>
           <input type="hidden" id="formPhoto" />
           <div class="flex items-center gap-3">
-            <img id="formPhotoPreview" data-g="male" onerror="window.photoFallback&&photoFallback(this)" alt="Foto" class="w-16 h-16 rounded-xl object-cover border-2 border-slate-600 bg-slate-700" />
+            <img id="formPhotoPreview" data-g="male" referrerpolicy="no-referrer" onerror="window.photoFallback&&photoFallback(this)" alt="Foto" class="w-16 h-16 rounded-full object-cover border-2 border-slate-600 bg-slate-700" />
             <div class="flex flex-col gap-2 flex-1">
               <label class="cursor-pointer px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-center">
                 <i class="fa-solid fa-image mr-1.5"></i> Pilih Foto dari Galeri / Kamera
                 <input type="file" accept="image/*" class="hidden" onchange="handlePhotoPick(event)" />
               </label>
-              <button type="button" onclick="setFormPhoto(''); document.getElementById('formPhotoUrl').value='';" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700">Hapus Foto</button>
+              <button type="button" onclick="clearFormPhoto()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700">Hapus Foto</button>
             </div>
           </div>
-          <input type="text" id="formPhotoUrl" oninput="setFormPhoto(this.value.trim())" placeholder="Atau tempel link foto https://..." class="mt-2 w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none" />
+          <p id="formPhotoStatus" class="text-[11px] text-slate-400"></p>
+          <input type="text" id="formPhotoUrl" oninput="onFormPhotoUrlInput(this.value)" placeholder="Atau tempel link foto https://..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none" />
         </div>
 
         <!-- Catatan & Riwayat Singkat -->
@@ -488,6 +474,7 @@
         <div>3. Klik <strong>Deploy &rarr; New deployment &rarr; Web app</strong>.</div>
         <div>4. Pilih akses: <strong>Who has access: Anyone</strong> (Siapa saja).</div>
         <div>5. Salin URL Web App dan tempelkan di kotak di atas.</div>
+        <div>6. Foto disimpan di <strong>Google Drive</strong> (folder &quot;Silsilah Keluarga - Foto&quot;), data anggota di Google Sheet. Di editor Apps Script, jalankan fungsi <code>izinkanDrive</code> sekali dan setujui izinnya, lalu <strong>Deploy &rarr; Kelola deployment &rarr; Versi baru</strong>.</div>
       </div>
 
       <div class="pt-2 flex items-center justify-end gap-2 border-t border-slate-800">
@@ -627,53 +614,207 @@
       { id: 11, fid: 9, mid: 10, name: "Baby Danendra Danurejo", gender: "male", birthYear: 2026, status: "alive", bio: "Cucu mungil generasi keenam keluarga besar Danurejo.", photo: "" }
     ];
 
-    // Avatar bawaan (SVG inline, tidak butuh internet / tidak bisa "hitam")
+    // ==========================================================
+    // FOTO: file foto disimpan di Google Drive, data anggota di Google Sheet.
+    // Di Sheet hanya tersimpan LINK foto (kolom "photo"), bukan isi gambarnya.
+    // ==========================================================
+    function esc(s) {
+      return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+    function escXml(s) {
+      return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+    function clip(s, n) {
+      s = String(s || "");
+      return s.length > n ? s.slice(0, n - 1) + "\u2026" : s;
+    }
+
+    // Avatar bawaan (SVG inline, selalu tampil walau tanpa internet)
     function defaultAvatar(gender) {
-      const bg = gender === "female" ? "#9d174d" : "#1d4ed8";
+      const bg = gender === "female" ? "#be185d" : "#1d4ed8";
       const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='${bg}'/><circle cx='50' cy='38' r='18' fill='#e2e8f0'/><path d='M14 100c0-24 16-38 36-38s36 14 36 38z' fill='#e2e8f0'/></svg>`;
       return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
     }
     const AVATAR_MALE = defaultAvatar("male");
     const AVATAR_FEMALE = defaultAvatar("female");
+
+    // Kenali link Google Drive (hasil unggah, thumbnail, atau link "bagikan") -> ID file
+    function driveFileId(url) {
+      const t = String(url || "");
+      const m = t.match(/googleusercontent\.com\/d\/([\w-]+)/) ||
+                t.match(/drive\.google\.com\/(?:thumbnail|uc)\?[^#\s]*\bid=([\w-]+)/) ||
+                t.match(/drive\.google\.com\/file\/d\/([\w-]+)/) ||
+                t.match(/drive\.google\.com\/open\?[^#\s]*\bid=([\w-]+)/);
+      return m ? m[1] : "";
+    }
+    function driveUrls(fileId) {
+      return {
+        main: `https://lh3.googleusercontent.com/d/${fileId}=w400`,
+        alt: `https://drive.google.com/thumbnail?id=${fileId}&sz=w400`
+      };
+    }
     function getPhoto(m) {
-      return (m && m.photo) ? m.photo : (m && m.gender === "female" ? AVATAR_FEMALE : AVATAR_MALE);
+      const p = (m && m.photo) ? String(m.photo) : "";
+      if (p) {
+        const id = driveFileId(p);
+        return id ? driveUrls(id).main : p;
+      }
+      return (m && m.gender === "female") ? AVATAR_FEMALE : AVATAR_MALE;
+    }
+    function getPhotoAlt(m) {
+      const id = driveFileId(m && m.photo);
+      return id ? driveUrls(id).alt : "";
+    }
+    // Pasang foto ke <img>, dengan cadangan: link alternatif Drive -> avatar bawaan
+    function setImg(img, m) {
+      img.removeAttribute("data-fb");
+      img.removeAttribute("data-alt-used");
+      img.setAttribute("data-g", m && m.gender === "female" ? "female" : "male");
+      const alt = getPhotoAlt(m);
+      if (alt) img.setAttribute("data-alt", alt); else img.removeAttribute("data-alt");
+      img.src = getPhoto(m);
     }
     function photoFallback(img) {
+      const alt = img.getAttribute("data-alt");
+      if (alt && !img.getAttribute("data-alt-used")) {
+        img.setAttribute("data-alt-used", "1");
+        img.src = alt;
+        return;
+      }
+      if (img.getAttribute("data-fb")) return;
+      img.setAttribute("data-fb", "1");
       const g = img.getAttribute("data-g") === "female" ? AVATAR_FEMALE : AVATAR_MALE;
-      img.onerror = null;
       img.src = g.startsWith("data:") ? dataUriToBlobUrl(g) : g;
     }
 
-    // Ambil foto dari galeri/kamera, kecilkan ke 240px JPEG agar ringan disimpan di Google Sheets
-    function handlePhotoPick(e) {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        const img = new Image();
-        img.onload = () => {
-          const size = 240;
-          const canvas = document.createElement("canvas");
-          canvas.width = size; canvas.height = size;
-          const ctx = canvas.getContext("2d");
-          const side = Math.min(img.width, img.height);
-          const sx = (img.width - side) / 2, sy = (img.height - side) / 2;
-          ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size);
-          setFormPhoto(canvas.toDataURL("image/jpeg", 0.75));
-          document.getElementById("formPhotoUrl").value = "";
+    // Foto yang baru dipilih (belum diunggah). Diunggah ke Drive saat tombol Simpan ditekan.
+    let pendingPhotoData = null;
+
+    // Kecilkan ke 400px (persegi, JPEG) agar unggahan ringan
+    function resizeImageFile(file, size) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = reject;
+        reader.onload = (evt) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            canvas.width = size; canvas.height = size;
+            const ctx = canvas.getContext("2d");
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, size, size);
+            const side = Math.min(img.width, img.height);
+            ctx.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, size, size);
+            resolve(canvas.toDataURL("image/jpeg", 0.8));
+          };
+          img.onerror = reject;
+          img.src = evt.target.result;
         };
-        img.onerror = () => alert("Foto tidak bisa dibaca. Coba foto lain.");
-        img.src = evt.target.result;
-      };
-      reader.readAsDataURL(file);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function handlePhotoPick(e) {
+      const file = e.target.files && e.target.files[0];
       e.target.value = "";
+      if (!file) return;
+      try {
+        pendingPhotoData = await resizeImageFile(file, 400);
+        document.getElementById("formPhotoUrl").value = "";
+        refreshFormPhotoPreview();
+      } catch (err) {
+        alert("Foto tidak bisa dibaca. Coba foto lain.");
+      }
     }
     function setFormPhoto(val) {
       document.getElementById("formPhoto").value = val || "";
+      refreshFormPhotoPreview();
+    }
+    function clearFormPhoto() {
+      pendingPhotoData = null;
+      document.getElementById("formPhotoUrl").value = "";
+      setFormPhoto("");
+    }
+    function onFormPhotoUrlInput(v) {
+      pendingPhotoData = null;
+      setFormPhoto((v || "").trim());
+    }
+    function refreshFormPhotoPreview() {
       const gender = document.getElementById("formGender").value;
+      const saved = document.getElementById("formPhoto").value;
       const prev = document.getElementById("formPhotoPreview");
+      const status = document.getElementById("formPhotoStatus");
+      prev.removeAttribute("data-fb");
+      prev.removeAttribute("data-alt-used");
       prev.setAttribute("data-g", gender);
-      prev.src = val || (gender === "female" ? AVATAR_FEMALE : AVATAR_MALE);
+      if (pendingPhotoData) {
+        prev.removeAttribute("data-alt");
+        prev.src = pendingPhotoData;
+        status.textContent = getGasUrl()
+          ? "Foto baru akan diunggah ke Google Drive saat Anda menekan Simpan Data."
+          : "Belum terhubung ke Google Sheets: foto baru hanya disimpan di perangkat ini.";
+      } else {
+        setImg(prev, { photo: saved, gender: gender });
+        status.textContent = !saved ? "Belum ada foto (memakai ikon bawaan)."
+          : (driveFileId(saved) ? "Foto tersimpan di Google Drive." : (saved.startsWith("data:") ? "Foto tersimpan di perangkat ini." : "Foto dari link luar."));
+      }
+    }
+
+    // Unggah ke Google Drive lewat Apps Script. Mengembalikan link foto.
+    async function uploadPhotoToDrive(memberId, name, dataUri) {
+      const gasUrl = getGasUrl();
+      if (!gasUrl) throw new Error("URL Google Apps Script belum diisi.");
+      const comma = dataUri.indexOf(",");
+      const mime = dataUri.slice(5, comma).split(";")[0] || "image/jpeg";
+      const res = await fetch(gasUrl, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: "uploadPhoto", memberId: memberId, name: name, mimeType: mime, data: dataUri.slice(comma + 1) })
+      });
+      let j = null;
+      try { j = await res.json(); } catch (e) {}
+      if (!j) throw new Error("Respons Apps Script tidak terbaca. Pasang Code.gs versi terbaru lalu Deploy versi baru.");
+      if (!j.ok || !j.fileId) throw new Error((j.error || "Unggah ditolak") + " (pastikan Code.gs versi terbaru sudah di-deploy dan izin Drive disetujui)");
+      return driveUrls(j.fileId).main;
+    }
+
+    // Buang file foto lama dari Drive (hanya file di folder foto milik aplikasi ini)
+    function trashDrivePhoto(url) {
+      const id = driveFileId(url);
+      const gasUrl = getGasUrl();
+      if (!id || !gasUrl) return;
+      fetch(gasUrl, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: "deletePhoto", fileId: id })
+      }).catch(() => {});
+    }
+
+    // Foto versi lama (base64 di dalam Sheet) dipindahkan otomatis ke Drive
+    let migratingPhotos = false, migrateFailed = false;
+    async function migrateLegacyPhotos() {
+      if (migratingPhotos || migrateFailed || !getGasUrl() || !cloudLoaded) return;
+      const todo = familyData.filter(m => m.photo && String(m.photo).startsWith("data:"));
+      if (!todo.length) return;
+      migratingPhotos = true;
+      const syncText = document.getElementById("syncText");
+      try {
+        let n = 0;
+        for (const m of todo) {
+          n++;
+          syncText.textContent = `Memindah foto ke Drive (${n}/${todo.length})...`;
+          m.photo = await uploadPhotoToDrive(m.id, m.name, m.photo);
+        }
+        initFamilyTree();
+        await saveToCloud();
+      } catch (err) {
+        migrateFailed = true;
+        console.warn("Migrasi foto gagal:", err);
+        showError("Foto lama belum bisa dipindah ke Google Drive: " + (err && err.message ? err.message : err));
+        syncText.textContent = "Tersambung (Google Sheets)";
+      } finally {
+        migratingPhotos = false;
+      }
     }
 
     // Rapikan data dari cloud/lokal (id teks, relasi putus, pasangan sepihak) agar pohon tidak kosong/error
@@ -814,6 +955,7 @@
     // SINKRONISASI ONLINE (GOOGLE SHEETS VIA APPS SCRIPT)
     // ==========================================================
     async function fetchDataFromCloud(forceManualRefresh = false, silent = false) {
+      if (silent && migratingPhotos) return;
       const gasUrl = getGasUrl();
       const syncBadge = document.getElementById("syncBadge");
       const syncDot = document.getElementById("syncDot");
@@ -865,6 +1007,7 @@
           syncDot.className = "w-2 h-2 rounded-full bg-emerald-400";
           syncText.textContent = "Tersambung (Google Sheets)";
           syncBadge.title = "Data sinkron dengan Google Sheets Anda.";
+          migrateLegacyPhotos();
         } else {
           // Sheet benar-benar kosong (respons valid tapi tanpa anggota): isi dengan data awal
           cloudLoaded = true;
@@ -914,11 +1057,14 @@
         };
 
         // Kirim via POST (text/plain menghindari preflight CORS di Google Apps Script)
-        await fetch(gasUrl, {
+        const res = await fetch(gasUrl, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify(payload)
         });
+        let saved = null;
+        try { saved = await res.json(); } catch (e) {}
+        if (saved && saved.ok === false) throw new Error(saved.error || "Ditolak oleh server");
 
         syncDot.className = "w-2 h-2 rounded-full bg-emerald-400";
         syncText.textContent = "Tersimpan Permanen";
@@ -1017,96 +1163,88 @@
       }
     }
 
+    // Warna per generasi: stroke = garis kartu, text = teks aksen, soft = latar kartu (terang, bukan hitam)
+    const GEN_STYLE = [
+      { stroke: "#f59e0b", text: "#b45309", soft: "#fffbeb" },
+      { stroke: "#6366f1", text: "#4338ca", soft: "#eef2ff" },
+      { stroke: "#0ea5e9", text: "#0369a1", soft: "#f0f9ff" },
+      { stroke: "#10b981", text: "#047857", soft: "#ecfdf5" },
+      { stroke: "#f97316", text: "#c2410c", soft: "#fff7ed" },
+      { stroke: "#14b8a6", text: "#0f766e", soft: "#f0fdfa" },
+      { stroke: "#a855f7", text: "#7e22ce", soft: "#faf5ff" }
+    ];
+    const CARD_W = 260, CARD_H = 124;
+    let cardTemplatesReady = false;
+
+    // Satu template kartu per generasi (SVG murni: teks & foto pasti tampil)
+    function buildCardTemplates() {
+      if (cardTemplatesReady) return;
+      GEN_STYLE.forEach((c, i) => {
+        const t = FamilyTree.templates["gen" + (i + 1)] = Object.assign({}, FamilyTree.templates.tommy);
+        t.size = [CARD_W, CARD_H];
+        t.defs = "";
+        t.node =
+          `<rect x="0" y="0" width="${CARD_W}" height="${CARD_H}" rx="18" ry="18" fill="${c.soft}" stroke="${c.stroke}" stroke-width="3"></rect>` +
+          `<line x1="16" y1="88" x2="${CARD_W - 16}" y2="88" stroke="${c.stroke}" stroke-opacity="0.45" stroke-width="1.5"></line>` +
+          `<circle cx="46" cy="46" r="28" fill="#cbd5e1"></circle>` +
+          `<circle cx="46" cy="40" r="9" fill="#f1f5f9"></circle>` +
+          `<path d="M28 68c1-10 9-16 18-16s17 6 18 16a28 28 0 0 1-36 0z" fill="#f1f5f9"></path>`;
+        t.img_0 =
+          `<clipPath id="{randId}"><circle cx="46" cy="46" r="28"></circle></clipPath>` +
+          `<image preserveAspectRatio="xMidYMid slice" clip-path="url(#{randId})" xlink:href="{val}" x="18" y="18" width="56" height="56"></image>` +
+          `<circle cx="46" cy="46" r="28" fill="none" stroke="${c.stroke}" stroke-width="3"></circle>`;
+        t.field_0 = `<text x="84" y="30" style="font-size:11px;font-weight:700;font-family:Inter,sans-serif;" fill="${c.text}">{val}</text>`;
+        t.field_1 = `<text data-width="164" data-text-overflow="ellipsis" x="84" y="52" style="font-size:14px;font-weight:700;font-family:Outfit,Inter,sans-serif;" fill="#0f172a">{val}</text>`;
+        t.field_2 = `<text data-width="164" data-text-overflow="ellipsis" x="84" y="70" style="font-size:12px;font-family:Inter,sans-serif;" fill="#475569">{val}</text>`;
+        t.field_3 = `<text x="16" y="110" style="font-size:12px;font-family:Inter,sans-serif;" fill="#334155">{val}</text>`;
+        t.field_4 = `<text text-anchor="end" x="${CARD_W - 16}" y="110" style="font-size:11px;font-weight:700;font-family:Inter,sans-serif;" fill="${c.text}">{val}</text>`;
+      });
+      cardTemplatesReady = true;
+    }
+
     function initFamilyTreeCore() {
+      buildCardTemplates();
       const processedData = computeAllGenerations(familyData);
 
-      // Kustomisasi Template Kartu
-      FamilyTree.templates.customFamilyTemplate = Object.assign({}, FamilyTree.templates.tommy);
-      FamilyTree.templates.customFamilyTemplate.size = [250, 130];
-      FamilyTree.templates.customFamilyTemplate.node = 
-        '<rect x="0" y="0" height="130" width="250" fill="#1e293b" rx="16" ry="16" stroke="#334155" stroke-width="2" class="bft-node shadow-xl"></rect>';
-      
-      FamilyTree.templates.customFamilyTemplate.defs = '';
-
-      // Tampilan HTML Kartu
-      FamilyTree.templates.customFamilyTemplate.html = `
-        <div class="w-full h-full p-3.5 flex flex-col justify-between text-left text-white select-none">
-          <div class="flex items-center gap-3">
-            <div class="relative shrink-0">
-              <img src="{val:photo}" data-g="{val:memberGender}" onerror="window.photoFallback&&photoFallback(this)" class="w-12 h-12 rounded-xl object-cover border-2 bg-slate-700 {val:avatarBorderColor}" />
-              <div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] text-white {val:genderBg}">
-                <i class="fa-solid {val:genderIcon}"></i>
-              </div>
-            </div>
-            <div class="min-w-0 flex-1">
-              <div class="flex items-center gap-1.5">
-                <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full {val:badgeGenColor}">Gen {val:genNumber}</span>
-                <span class="text-[9px] text-slate-400 truncate">{val:statusText}</span>
-              </div>
-              <h4 class="text-xs font-bold font-outfit text-white truncate mt-0.5" title="{val:name}">{val:name}</h4>
-              <p class="text-[10px] text-indigo-300 font-medium truncate">{val:genTitle}</p>
-            </div>
-          </div>
-          <div class="pt-2 border-t border-slate-700/60 flex items-center justify-between text-[10px] text-slate-400">
-            <span><i class="fa-regular fa-calendar mr-1"></i>{val:lifeSpan}</span>
-            <span class="text-indigo-400 font-semibold hover:underline">Detail &rarr;</span>
-          </div>
-        </div>
-      `;
-
-      // Transformasi Data ke Format Kartu
       const treeElements = processedData.map(m => {
-        const isMale = m.gender === "male";
         const isAlive = m.status !== "deceased";
-        let lifeSpan = m.birthYear ? `${m.birthYear}` : "?";
-        if (!isAlive) {
-          lifeSpan += ` - ${m.deathYear || 'Wafat'}`;
-        } else {
-          lifeSpan += " (Hidup)";
-        }
-
-        // Tentukan warna border & badge sesuai generasi
-        const genColorPalette = [
-          "border-amber-400 bg-amber-950/80 text-amber-300",
-          "border-indigo-400 bg-indigo-950/80 text-indigo-300",
-          "border-sky-400 bg-sky-950/80 text-sky-300",
-          "border-emerald-400 bg-emerald-950/80 text-emerald-300",
-          "border-orange-400 bg-orange-950/80 text-orange-300",
-          "border-teal-400 bg-teal-950/80 text-teal-300",
-          "border-purple-400 bg-purple-950/80 text-purple-300"
-        ];
-        const colorIdx = Math.min((m.genNumber || 1) - 1, genColorPalette.length - 1);
-        const chosenPalette = genColorPalette[colorIdx].split(" ");
-
+        const gi = Math.min(Math.max(m.genNumber || 1, 1), GEN_STYLE.length);
+        let life = m.birthYear ? String(m.birthYear) : "?";
+        life += isAlive ? " (Hidup)" : " - " + (m.deathYear || "Wafat");
         return {
           id: m.id,
           mid: m.mid,
           fid: m.fid,
           pids: m.pids,
-          name: m.name,
-          genNumber: m.genNumber,
-          genTitle: m.genTitle,
-          statusText: isAlive ? "Hidup" : "Almarhum",
-          lifeSpan: lifeSpan,
-          photo: getCardPhoto(m),
-          memberGender: isMale ? "male" : "female",
-          avatarBorderColor: chosenPalette[0],
-          badgeGenColor: `${chosenPalette[1]} ${chosenPalette[2]} border border-current`,
-          genderIcon: isMale ? "fa-mars" : "fa-venus",
-          genderBg: isMale ? "bg-blue-600" : "bg-pink-600"
+          tags: ["gen" + gi],
+          f0: escXml("Gen " + m.genNumber + (isAlive ? "" : "  \u2022  Almarhum")),
+          f1: escXml(clip(m.name, 22)),
+          f2: escXml(clip(m.genTitle, 26)),
+          f3: escXml(life),
+          f4: "Detail \u203A",
+          photoCard: getCardPhoto(m)
         };
       });
+
+      const tagMap = {};
+      GEN_STYLE.forEach((c, i) => { tagMap["gen" + (i + 1)] = { template: "gen" + (i + 1) }; });
 
       // Hancurkan instance lama jika ada
       const treeContainer = document.getElementById("tree");
       treeContainer.innerHTML = "";
 
       tree = new FamilyTree(treeContainer, {
-        template: "customFamilyTemplate",
+        template: "gen1",
+        tags: tagMap,
         enableSearch: false,
         mouseScrool: FamilyTree.action.zoom,
         nodeBinding: {
-          html: "html"
+          field_0: "f0",
+          field_1: "f1",
+          field_2: "f2",
+          field_3: "f3",
+          field_4: "f4",
+          img_0: "photoCard"
         },
         nodes: treeElements
       });
@@ -1119,20 +1257,19 @@
         }
       });
 
-      // Terapkan degradasi warna garis silsilah secara visual
+      tree.on('redraw', applyGraduationLinkColors);
       setTimeout(applyGraduationLinkColors, 400);
     }
 
-    // Mengubah warna garis penghubung sesuai tingkatan generasi
+    // Warna garis penghubung mengikuti generasi anggota di ujung garis (solid agar selalu terlihat)
     function applyGraduationLinkColors() {
-      const linkElements = document.querySelectorAll('#tree svg path[data-bft-link]');
-      const processed = computeAllGenerations(familyData);
-      const memberMap = new Map();
-      processed.forEach(m => memberMap.set(m.id, m));
-
-      linkElements.forEach(path => {
-        path.style.stroke = "url(#gradGen3)";
-        path.style.strokeWidth = "4px";
+      const gen = new Map(computeAllGenerations(familyData).map(m => [String(m.id), m.genNumber]));
+      document.querySelectorAll('#tree svg path[data-l-id]').forEach(path => {
+        const parts = (path.getAttribute('data-l-id') || '').match(/\[([^\]]*)\]/g) || [];
+        const target = parts.length ? parts[parts.length - 1].slice(1, -1) : "";
+        const g = gen.get(target) || 3;
+        path.style.stroke = GEN_STYLE[Math.min(g, GEN_STYLE.length) - 1].stroke;
+        path.style.strokeWidth = "3px";
       });
     }
 
@@ -1160,7 +1297,7 @@
       );
 
       if (matches.length === 0) {
-        resultsContainer.innerHTML = `<div class="p-3 text-center text-slate-400">Tidak ada anggota keluarga ditemukan dengan kata kunci "${query}".</div>`;
+        resultsContainer.innerHTML = `<div class="p-3 text-center text-slate-400">Tidak ada anggota keluarga ditemukan dengan kata kunci "${esc(query)}".</div>`;
         resultsContainer.classList.remove("hidden");
         return;
       }
@@ -1168,9 +1305,9 @@
       resultsContainer.innerHTML = matches.map(m => `
         <div onclick="selectSearchResult(${m.id})" class="p-2.5 hover:bg-slate-800 cursor-pointer flex items-center justify-between transition-colors">
           <div class="flex items-center gap-2.5">
-            <img src="${getPhoto(m)}" data-g="${m.gender}" onerror="window.photoFallback&&photoFallback(this)" class="w-8 h-8 rounded-lg object-cover" />
+            <img src="${esc(getPhoto(m))}" data-g="${m.gender}" data-alt="${esc(getPhotoAlt(m))}" referrerpolicy="no-referrer" onerror="window.photoFallback&&photoFallback(this)" class="w-8 h-8 rounded-full object-cover" />
             <div>
-              <div class="font-bold text-white">${m.name}</div>
+              <div class="font-bold text-white">${esc(m.name)}</div>
               <div class="text-[10px] text-slate-400">Gen ${m.genNumber} &bull; ${m.genTitle}</div>
             </div>
           </div>
@@ -1216,9 +1353,7 @@
       lifeSpan += isAlive ? " - Sekarang (Hidup)" : ` - ${member.deathYear || 'Wafat'} (Almarhum)`;
       document.getElementById("drawerLifeSpan").textContent = lifeSpan;
 
-      const dAv = document.getElementById("drawerAvatar");
-      dAv.setAttribute("data-g", member.gender === "female" ? "female" : "male");
-      dAv.src = getPhoto(member);
+      setImg(document.getElementById("drawerAvatar"), member);
 
       const genderIcon = document.getElementById("drawerGenderIcon");
       if (member.gender === "male") {
@@ -1342,8 +1477,9 @@
       toggleDeceasedYear(member.status);
       document.getElementById("formBirthYear").value = member.birthYear || "";
       document.getElementById("formDeathYear").value = member.deathYear || "";
+      pendingPhotoData = null;
       setFormPhoto(member.photo || "");
-      document.getElementById("formPhotoUrl").value = (member.photo && !member.photo.startsWith("data:")) ? member.photo : "";
+      document.getElementById("formPhotoUrl").value = (member.photo && !member.photo.startsWith("data:") && !driveFileId(member.photo)) ? member.photo : "";
       document.getElementById("formBio").value = member.bio || "";
       document.getElementById("formPhone").value = member.phone || "";
 
@@ -1362,6 +1498,7 @@
       document.getElementById("memberForm").reset();
       document.getElementById("formMemberId").value = "";
       document.getElementById("formPhotoUrl").value = "";
+      pendingPhotoData = null;
       setFormPhoto("");
       toggleDeceasedYear("alive");
     }
@@ -1430,6 +1567,8 @@
     // SIMPAN ANGGOTA (TAMBAH / EDIT)
     async function handleSaveMember(e) {
       e.preventDefault();
+      const btn = document.getElementById("btnSubmitForm");
+      const btnHtml = btn.innerHTML;
       const idVal = document.getElementById("formMemberId").value;
       const isEdit = idVal !== "";
       const memberId = isEdit ? parseInt(idVal) : Date.now();
@@ -1442,9 +1581,31 @@
       const fId = parseInt(document.getElementById("formFather").value) || null;
       const mId = parseInt(document.getElementById("formMother").value) || null;
       const sId = parseInt(document.getElementById("formSpouse").value) || null;
-      const photo = document.getElementById("formPhoto").value.trim();
       const bio = document.getElementById("formBio").value.trim();
       const phone = document.getElementById("formPhone").value.trim();
+
+      const oldMember = isEdit ? familyData.find(m => m.id === memberId) : null;
+      const oldPhoto = (oldMember && oldMember.photo) ? oldMember.photo : "";
+      let photo = document.getElementById("formPhoto").value.trim();
+
+      // Foto baru: unggah ke Google Drive; di Sheet hanya disimpan linknya
+      if (pendingPhotoData) {
+        if (getGasUrl()) {
+          btn.disabled = true;
+          btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengunggah foto...';
+          try {
+            photo = await uploadPhotoToDrive(memberId, name, pendingPhotoData);
+          } catch (err) {
+            alert("Foto gagal diunggah ke Google Drive: " + (err && err.message ? err.message : err) + "\n\nData anggota tetap disimpan, tanpa foto baru.");
+            photo = oldPhoto;
+          }
+          btn.disabled = false;
+          btn.innerHTML = btnHtml;
+        } else {
+          photo = pendingPhotoData; // mode lokal: hanya tersimpan di perangkat ini
+        }
+      }
+      pendingPhotoData = null;
 
       const newMemberObj = {
         id: memberId,
@@ -1479,6 +1640,9 @@
         }
       }
 
+      // Foto lama di Drive dibuang bila sudah diganti / dihapus
+      if (oldPhoto && oldPhoto !== photo) trashDrivePhoto(oldPhoto);
+
       closeMemberModal();
       initFamilyTree();
       await saveToCloud();
@@ -1501,6 +1665,8 @@
 
       const confirmMsg = `Yakin ingin menghapus ${member.name} dari bagan silsilah? Hubungan orang tua dan pasangan akan dilepaskan secara bersih.`;
       if (!confirm(confirmMsg)) return;
+
+      trashDrivePhoto(member.photo);
 
       // 1. Lepas referensi dari anggota keluarga lain
       familyData.forEach(m => {
