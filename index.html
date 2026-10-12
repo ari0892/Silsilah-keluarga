@@ -641,7 +641,7 @@
     function photoFallback(img) {
       const g = img.getAttribute("data-g") === "female" ? AVATAR_FEMALE : AVATAR_MALE;
       img.onerror = null;
-      img.src = g;
+      img.src = g.startsWith("data:") ? dataUriToBlobUrl(g) : g;
     }
 
     // Ambil foto dari galeri/kamera, kecilkan ke 240px JPEG agar ringan disimpan di Google Sheets
@@ -732,21 +732,35 @@
       el.textContent = msg + " (ketuk untuk tutup)";
     }
 
-    // Foto kartu pohon diisi lewat JS agar data foto panjang tidak lewat mesin template library
-    let photoMap = {};
-    function applyCardPhotos() {
-      document.querySelectorAll("#tree img[data-pid]").forEach(img => {
-        const id = img.getAttribute("data-pid");
-        if (img.getAttribute("data-done") === id) return;
-        img.setAttribute("data-done", id);
-        const src = photoMap[id];
-        if (src) img.src = src;
-      });
+    // Foto kartu pohon: ubah data foto (base64/SVG) menjadi link blob pendek,
+    // sehingga bentuknya sama seperti link foto biasa yang diterima library pohon.
+    const blobCache = new Map();
+    function dataUriToBlobUrl(uri) {
+      if (blobCache.has(uri)) return blobCache.get(uri);
+      let url = uri;
+      try {
+        const comma = uri.indexOf(",");
+        const meta = uri.slice(5, comma);
+        const mime = meta.split(";")[0] || "image/jpeg";
+        const raw = uri.slice(comma + 1);
+        let blob;
+        if (meta.includes("base64")) {
+          const bin = atob(raw);
+          const arr = new Uint8Array(bin.length);
+          for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+          blob = new Blob([arr], { type: mime });
+        } else {
+          blob = new Blob([decodeURIComponent(raw)], { type: mime });
+        }
+        url = URL.createObjectURL(blob);
+      } catch (e) { console.warn("Foto tidak valid", e); }
+      blobCache.set(uri, url);
+      return url;
     }
-    document.addEventListener("DOMContentLoaded", () => {
-      const host = document.getElementById("tree");
-      new MutationObserver(applyCardPhotos).observe(host, { childList: true, subtree: true });
-    });
+    function getCardPhoto(m) {
+      const ph = getPhoto(m);
+      return ph.startsWith("data:") ? dataUriToBlobUrl(ph) : ph;
+    }
 
     // Status State Aplikasi
     let familyData = [];
@@ -1019,7 +1033,7 @@
         <div class="w-full h-full p-3.5 flex flex-col justify-between text-left text-white select-none">
           <div class="flex items-center gap-3">
             <div class="relative shrink-0">
-              <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-pid="{val:id}" data-g="{val:memberGender}" onerror="window.photoFallback&&photoFallback(this)" class="w-12 h-12 rounded-xl object-cover border-2 bg-slate-700 {val:avatarBorderColor}" />
+              <img src="{val:photo}" data-g="{val:memberGender}" onerror="window.photoFallback&&photoFallback(this)" class="w-12 h-12 rounded-xl object-cover border-2 bg-slate-700 {val:avatarBorderColor}" />
               <div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] text-white {val:genderBg}">
                 <i class="fa-solid {val:genderIcon}"></i>
               </div>
@@ -1041,9 +1055,6 @@
       `;
 
       // Transformasi Data ke Format Kartu
-      photoMap = {};
-      processedData.forEach(m => { photoMap[m.id] = getPhoto(m); });
-
       const treeElements = processedData.map(m => {
         const isMale = m.gender === "male";
         const isAlive = m.status !== "deceased";
@@ -1077,6 +1088,7 @@
           genTitle: m.genTitle,
           statusText: isAlive ? "Hidup" : "Almarhum",
           lifeSpan: lifeSpan,
+          photo: getCardPhoto(m),
           memberGender: isMale ? "male" : "female",
           avatarBorderColor: chosenPalette[0],
           badgeGenColor: `${chosenPalette[1]} ${chosenPalette[2]} border border-current`,
@@ -1109,7 +1121,6 @@
 
       // Terapkan degradasi warna garis silsilah secara visual
       setTimeout(applyGraduationLinkColors, 400);
-      setTimeout(applyCardPhotos, 100);
     }
 
     // Mengubah warna garis penghubung sesuai tingkatan generasi
