@@ -57,106 +57,126 @@
   <!-- Kanvas Utama Pohon Silsilah -->
   <div id="tree"></div>
 
-  <!-- HEADER UTAMA -->
-  <div class="fixed top-4 left-1/2 -translate-x-1/2 z-30 w-11/12 max-w-2xl">
-    <div class="bg-slate-900/90 backdrop-blur-md border border-slate-700/80 rounded-2xl p-4 shadow-2xl flex flex-col gap-3">
+  <!-- NAVBAR ATAS RAMPING MEMANJANG (TIDAK MENUTUPI POHON KELUARGA) -->
+  <header class="fixed top-0 left-0 right-0 z-30 w-full bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-3 sm:px-6 py-2.5 shadow-2xl">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2.5">
       
-      <!-- Baris Atas: Judul Silsilah, Status Cloud, Galeri, dan Menu -->
-      <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
-        <div>
-          <h1 id="treeTitle" class="text-xl md:text-2xl font-bold font-outfit text-white tracking-wide flex items-center gap-2">
-            <i class="fa-solid fa-seedling text-emerald-400 text-lg"></i>
-            <span>Silsilah Trah Keluarga Besar</span>
-          </h1>
-          <p id="treeDesc" class="text-xs text-slate-400 mt-0.5">Bagan Garis Keturunan Generasi Terhubung</p>
+      <!-- Sisi Kiri: Judul Trah Silsilah -->
+      <div class="flex items-center justify-between w-full md:w-auto">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-emerald-950 border border-emerald-700 flex items-center justify-center text-emerald-400 shrink-0">
+            <i class="fa-solid fa-seedling text-base"></i>
+          </div>
+          <div>
+            <h1 id="treeTitle" class="text-sm sm:text-base font-bold font-outfit text-white tracking-wide truncate max-w-xs sm:max-w-md">
+              Silsilah Trah Keluarga Besar
+            </h1>
+            <p id="treeDesc" class="text-[11px] text-slate-400 truncate max-w-xs sm:max-w-md">
+              Bagan Garis Keturunan Generasi Terhubung
+            </p>
+          </div>
         </div>
 
-        <div class="flex items-center gap-2">
-          <!-- Tombol Buka Galeri Foto Anggota -->
-          <button onclick="openGalleryModal()" title="Buka Album & Galeri Foto Keluarga" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/30 transition-all">
+        <!-- Tombol Aksi Mobile (Hanya tampil di HP) -->
+        <div class="flex items-center gap-1.5 md:hidden">
+          <button onclick="openGalleryModal()" title="Galeri Foto" class="p-2 rounded-xl bg-emerald-600 text-white text-xs">
             <i class="fa-solid fa-images"></i>
-            <span class="hidden sm:inline">Galeri Foto</span>
           </button>
-
-          <!-- Indikator Cloud Database -->
-          <div id="syncBadge" title="Klik untuk atur URL Google Sheets" onclick="openDatabaseModal()" class="cursor-pointer flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-500 transition-all">
-            <span id="syncDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-            <span id="syncText" class="hidden sm:inline">Menghubungkan...</span>
-          </div>
-
-          <!-- Tombol Segarkan Data -->
-          <button onclick="fetchDataFromCloud(true)" title="Segarkan Data Terbaru dari Google Sheets" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 hover:text-white transition-all">
-            <i id="refreshIcon" class="fa-solid fa-arrows-rotate text-sm"></i>
+          <button onclick="toggleMenuEdit()" class="p-2 rounded-xl bg-indigo-600 text-white text-xs">
+            <i class="fa-solid fa-bars"></i>
           </button>
-
-          <!-- Dropdown Menu Edit -->
-          <div class="relative">
-            <button id="btnMenuEdit" onclick="toggleMenuEdit()" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-3 py-2 rounded-xl shadow-lg shadow-indigo-600/30 transition-all">
-              <i class="fa-solid fa-pen-to-square"></i>
-              <span>Menu Edit</span>
-              <i class="fa-solid fa-chevron-down text-[10px] ml-0.5"></i>
-            </button>
-
-            <!-- Popup Menu Dropdown -->
-            <div id="dropdownMenuEdit" class="hidden absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl py-1.5 z-40 text-xs">
-              <button onclick="openAddMemberModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-emerald-400">
-                <i class="fa-solid fa-user-plus w-4"></i> Tambah Anggota Baru
-              </button>
-              <button onclick="openGalleryModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-emerald-300">
-                <i class="fa-solid fa-images w-4"></i> Kelola Foto Anggota
-              </button>
-              <button onclick="openSelectEditModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-blue-400">
-                <i class="fa-solid fa-user-pen w-4"></i> Pilih & Edit Anggota
-              </button>
-              <button onclick="openSelectDeleteModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-rose-400">
-                <i class="fa-solid fa-user-minus w-4"></i> Pilih & Hapus Anggota
-              </button>
-              <div class="my-1 border-t border-slate-800"></div>
-              <button onclick="openTitleEditModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-slate-300">
-                <i class="fa-solid fa-heading w-4 text-amber-400"></i> Ubah Judul & Info Trah
-              </button>
-              <button onclick="openGenerationTitleModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-slate-300">
-                <i class="fa-solid fa-tags w-4 text-purple-400"></i> Kelola Gelar Generasi
-              </button>
-              <button onclick="openDatabaseModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-emerald-300">
-                <i class="fa-solid fa-database w-4 text-emerald-400"></i> Koneksi Google Sheets
-              </button>
-              <div class="my-1 border-t border-slate-800"></div>
-              <button onclick="exportDataJson(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-slate-300">
-                <i class="fa-solid fa-file-export w-4 text-cyan-400"></i> Backup Data (JSON)
-              </button>
-              <button onclick="triggerImportJson(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-slate-300">
-                <i class="fa-solid fa-file-import w-4 text-teal-400"></i> Pulihkan Data (JSON)
-              </button>
-              <button onclick="confirmResetToSingleAncestor(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-rose-950/40 text-rose-400 flex items-center gap-2.5">
-                <i class="fa-solid fa-rotate-left w-4"></i> Reset ke 1 Leluhur Awal
-              </button>
-            </div>
-          </div>
         </div>
       </div>
 
-      <!-- Baris Bawah: Pencarian Cepat Tepat di Bawah Judul -->
-      <div class="relative">
+      <!-- Sisi Tengah: Kolom Pencarian Cepat Memanjang -->
+      <div class="relative w-full md:max-w-md lg:max-w-lg">
         <div class="relative flex items-center">
-          <i class="fa-solid fa-magnifying-glass absolute left-3.5 text-slate-400 text-sm"></i>
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 text-slate-400 text-xs"></i>
           <input 
             type="text" 
             id="searchInput"
-            placeholder="Cari nama anggota keluarga atau sebutan gelar..." 
-            class="w-full bg-slate-800/90 border border-slate-700 focus:border-indigo-500 rounded-xl pl-10 pr-10 py-2.5 text-xs md:text-sm text-white placeholder-slate-400 focus:outline-none transition-all shadow-inner"
+            placeholder="Cari nama anggota keluarga atau gelar..." 
+            class="w-full bg-slate-800/90 border border-slate-700 focus:border-indigo-500 rounded-xl pl-9 pr-9 py-1.5 text-xs text-white placeholder-slate-400 focus:outline-none transition-all shadow-inner"
             oninput="handleSearch(this.value)"
           />
           <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-3 text-slate-400 hover:text-white">
-            <i class="fa-solid fa-xmark text-sm"></i>
+            <i class="fa-solid fa-xmark text-xs"></i>
           </button>
         </div>
 
+        <!-- Dropdown Hasil Pencarian -->
         <div id="searchResults" class="hidden absolute left-0 right-0 mt-2 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl max-h-64 overflow-y-auto z-40 divide-y divide-slate-800 text-xs"></div>
       </div>
 
+      <!-- Sisi Kanan: Tombol Aksi Horizontal Ramping (Laptop / Desktop) -->
+      <div class="hidden md:flex items-center gap-2">
+        
+        <!-- Tombol Galeri Foto -->
+        <button onclick="openGalleryModal()" title="Buka Album & Galeri Foto Keluarga" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/30 transition-all">
+          <i class="fa-solid fa-images"></i>
+          <span>Galeri Foto</span>
+        </button>
+
+        <!-- Indikator Cloud Database Google Sheets -->
+        <div id="syncBadge" title="Klik untuk atur URL Google Sheets" onclick="openDatabaseModal()" class="cursor-pointer flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium border bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-500 transition-all">
+          <span id="syncDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+          <span id="syncText">Menghubungkan...</span>
+        </div>
+
+        <!-- Tombol Segarkan Data -->
+        <button onclick="fetchDataFromCloud(true)" title="Segarkan Data Terbaru dari Google Sheets" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 hover:text-white transition-all">
+          <i id="refreshIcon" class="fa-solid fa-arrows-rotate text-xs"></i>
+        </button>
+
+        <!-- Dropdown Menu Edit -->
+        <div class="relative">
+          <button id="btnMenuEdit" onclick="toggleMenuEdit()" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-3 py-1.5 rounded-xl shadow-lg shadow-indigo-600/30 transition-all">
+            <i class="fa-solid fa-pen-to-square"></i>
+            <span>Menu Edit</span>
+            <i class="fa-solid fa-chevron-down text-[10px] ml-0.5"></i>
+          </button>
+
+          <!-- Popup Menu Dropdown -->
+          <div id="dropdownMenuEdit" class="hidden absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl py-1.5 z-40 text-xs">
+            <button onclick="openAddMemberModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-emerald-400">
+              <i class="fa-solid fa-user-plus w-4"></i> Tambah Anggota Baru
+            </button>
+            <button onclick="openGalleryModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-emerald-300">
+              <i class="fa-solid fa-images w-4"></i> Kelola Foto Anggota
+            </button>
+            <button onclick="openSelectEditModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-blue-400">
+              <i class="fa-solid fa-user-pen w-4"></i> Pilih & Edit Anggota
+            </button>
+            <button onclick="openSelectDeleteModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-rose-400">
+              <i class="fa-solid fa-user-minus w-4"></i> Pilih & Hapus Anggota
+            </button>
+            <div class="my-1 border-t border-slate-800"></div>
+            <button onclick="openTitleEditModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-slate-300">
+              <i class="fa-solid fa-heading w-4 text-amber-400"></i> Ubah Judul & Info Trah
+            </button>
+            <button onclick="openGenerationTitleModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-slate-300">
+              <i class="fa-solid fa-tags w-4 text-purple-400"></i> Kelola Gelar Generasi
+            </button>
+            <button onclick="openDatabaseModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-emerald-300">
+              <i class="fa-solid fa-database w-4 text-emerald-400"></i> Koneksi Google Sheets
+            </button>
+            <div class="my-1 border-t border-slate-800"></div>
+            <button onclick="exportDataJson(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-slate-300">
+              <i class="fa-solid fa-file-export w-4 text-cyan-400"></i> Backup Data (JSON)
+            </button>
+            <button onclick="triggerImportJson(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-slate-300">
+              <i class="fa-solid fa-file-import w-4 text-teal-400"></i> Pulihkan Data (JSON)
+            </button>
+            <button onclick="confirmResetToSingleAncestor(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-rose-950/40 text-rose-400 flex items-center gap-2.5">
+              <i class="fa-solid fa-rotate-left w-4"></i> Reset ke 1 Leluhur Awal
+            </button>
+          </div>
+        </div>
+
+      </div>
+
     </div>
-  </div>
+  </header>
 
   <!-- KONTROL ZOOM (Pojok Kanan Bawah) -->
   <div class="fixed bottom-6 right-6 z-20 flex flex-col gap-2">
@@ -247,12 +267,12 @@
     </div>
   </div>
 
-  <!-- MODAL CEPAT PASANG / GANTI FOTO DARI GALERI -->
+  <!-- MODAL CEPAT PASANG / GANTI FOTO KE GOOGLE DRIVE -->
   <div id="quickPhotoModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl p-5 space-y-4 text-xs">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <h3 class="text-sm font-bold text-white flex items-center gap-2 font-outfit">
-          <i class="fa-solid fa-camera text-indigo-400"></i> Pasang / Ganti Foto Anggota
+          <i class="fa-solid fa-camera text-indigo-400"></i> Pasang Foto (Auto Simpan ke Google Drive)
         </h3>
         <button onclick="closeQuickPhotoModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
@@ -261,23 +281,33 @@
       <input type="hidden" id="quickPhotoData" />
 
       <div class="text-center space-y-2">
-        <img id="quickPhotoPreview" src="" class="w-24 h-24 mx-auto rounded-2xl object-cover border-2 border-indigo-500 bg-slate-800 shadow-lg" />
+        <div class="relative w-24 h-24 mx-auto">
+          <img id="quickPhotoPreview" src="" class="w-24 h-24 rounded-2xl object-cover border-2 border-indigo-500 bg-slate-800 shadow-lg" />
+          <div id="quickPhotoLoadingOverlay" class="hidden absolute inset-0 bg-slate-950/80 rounded-2xl flex flex-col items-center justify-center text-emerald-400">
+            <i class="fa-solid fa-circle-notch fa-spin text-xl mb-1"></i>
+            <span class="text-[9px] font-bold">Uploading...</span>
+          </div>
+        </div>
         <h4 id="quickPhotoMemberName" class="font-bold text-sm text-white">Nama Anggota</h4>
+        <p id="quickPhotoStatusHint" class="text-[10px] text-slate-400">Foto otomatis disimpan di Google Drive Anda.</p>
       </div>
 
-      <!-- Opsi 1: Upload dari File Komputer / HP -->
+      <!-- Opsi 1: Upload dari File Komputer / HP (Auto Drive Upload) -->
       <div class="p-3 bg-slate-800/60 rounded-xl border border-slate-700 space-y-2">
-        <label class="block text-slate-300 font-semibold">Opsi 1: Ambil dari Galeri HP / Laptop</label>
+        <label class="block text-slate-300 font-semibold flex items-center justify-between">
+          <span>Pilih Foto dari Galeri / Kamera</span>
+          <span class="text-[10px] text-emerald-400"><i class="fa-brands fa-google-drive mr-1"></i>Auto ke Drive</span>
+        </label>
         <label for="quickPhotoFileInput" class="cursor-pointer flex items-center justify-center gap-2 w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition-all shadow-md">
           <i class="fa-solid fa-upload"></i> Pilih Berkas Foto
         </label>
         <input type="file" id="quickPhotoFileInput" accept="image/*" class="hidden" onchange="handleQuickPhotoUpload(event)" />
-        <p class="text-[10px] text-slate-400 text-center">*Otomatis dikompres agar sangat ringan & muat di Google Sheets.</p>
+        <p class="text-[10px] text-slate-400 text-center">*Fotonya tersimpan di folder Google Drive dan aman dari limit Google Sheets.</p>
       </div>
 
-      <!-- Opsi 2: Tautan URL Foto / Google Drive -->
+      <!-- Opsi 2: Tautan URL Foto / Google Drive Manual -->
       <div class="p-3 bg-slate-800/60 rounded-xl border border-slate-700 space-y-1.5">
-        <label class="block text-slate-300 font-semibold">Opsi 2: Link Foto Web / Google Drive (Bebas Batas Ukuran)</label>
+        <label class="block text-slate-300 font-semibold">Atau Tempel Link URL Foto / Google Drive</label>
         <input 
           type="url" 
           id="quickPhotoUrlInput" 
@@ -285,7 +315,6 @@
           oninput="handleQuickPhotoUrlInput(this.value)"
           class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none"
         />
-        <p class="text-[10px] text-slate-400">Jika memakai link Google Drive, pastikan izin file disetel <em>'Siapa saja yang memiliki link'</em>.</p>
       </div>
 
       <div class="flex items-center justify-between pt-2 border-t border-slate-800">
@@ -294,7 +323,7 @@
         </button>
         <div class="flex gap-2">
           <button type="button" onclick="closeQuickPhotoModal()" class="px-4 py-2 bg-slate-800 rounded-xl text-slate-300 font-semibold">Batal</button>
-          <button type="button" onclick="saveQuickPhoto()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl flex items-center gap-1.5">
+          <button type="button" id="btnSubmitQuickPhoto" onclick="saveQuickPhoto()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl flex items-center gap-1.5">
             <i class="fa-solid fa-check"></i> Simpan Foto
           </button>
         </div>
@@ -399,35 +428,41 @@
           <input type="text" id="formName" oninput="updateInitialPreview()" required placeholder="Contoh: Raden Ahmad Sudrajat" class="w-full bg-slate-800 border border-slate-700 focus:border-indigo-500 rounded-xl px-3 py-2 text-white focus:outline-none" />
         </div>
 
-        <!-- PILIHAN FOTO / AVATAR KELUARGA -->
+        <!-- PILIHAN FOTO / AVATAR KELUARGA (AUTO UPLOAD KE DRIVE) -->
         <div class="p-3.5 bg-slate-800/60 rounded-xl border border-slate-700 space-y-3">
-          <label class="block text-slate-300 font-semibold">Foto Profil / Pilihan Avatar</label>
+          <label class="block text-slate-300 font-semibold flex items-center justify-between">
+            <span>Foto Profil Anggota</span>
+            <span id="formPhotoUploadStatus" class="text-[10px] text-slate-400"></span>
+          </label>
           
           <div class="flex items-center gap-3">
-            <div class="relative shrink-0">
+            <div class="relative shrink-0 w-16 h-16">
               <img id="formPhotoPreview" src="" class="w-16 h-16 rounded-xl object-cover border-2 border-indigo-500 bg-slate-700 shadow-md" />
+              <div id="formPhotoLoading" class="hidden absolute inset-0 bg-slate-950/80 rounded-xl flex items-center justify-center text-emerald-400 text-xs">
+                <i class="fa-solid fa-circle-notch fa-spin"></i>
+              </div>
             </div>
             <div class="flex-1 space-y-1">
               <div class="flex flex-wrap gap-1.5">
-                <!-- Pilihan 1: Galeri HP/Laptop -->
+                <!-- Pilihan 1: Galeri HP/Laptop dengan Auto Upload ke Google Drive -->
                 <label for="formPhotoFile" class="cursor-pointer inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg transition-all text-[11px]">
                   <i class="fa-solid fa-camera"></i>
-                  <span>Dari Galeri</span>
+                  <span>Upload Foto (Drive)</span>
                 </label>
-                <input type="file" id="formPhotoFile" accept="image/*" class="hidden" onchange="handlePhotoUpload(event)" />
+                <input type="file" id="formPhotoFile" accept="image/*" class="hidden" onchange="handleFormPhotoUpload(event)" />
 
                 <!-- Pilihan 2: Avatar Inisial Nama Otomatis -->
                 <button type="button" onclick="selectInitialAvatar()" class="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold rounded-lg text-[11px] border border-slate-600">
                   <i class="fa-solid fa-font mr-1"></i> Inisial Nama
                 </button>
               </div>
-              <p class="text-[10px] text-slate-400">Pilih dari galeri atau gunakan koleksi avatar bawaan di bawah ini (100% aman & ringan di Google Sheets):</p>
+              <p class="text-[10px] text-slate-400">Pilih dari galeri untuk simpan otomatis ke Google Drive, atau pilih avatar bawaan di bawah ini:</p>
             </div>
           </div>
 
           <!-- Koleksi Avatar Bawaan (Preset Kartun Ringan) -->
           <div>
-            <div class="text-[10px] text-slate-400 mb-1.5 font-medium">Pilihan Karakter Bawaan Cepat:</div>
+            <div class="text-[10px] text-slate-400 mb-1.5 font-medium">Pilihan Karakter Cepat:</div>
             <div class="grid grid-cols-6 gap-2" id="presetAvatarContainer">
               <!-- Render 6 avatar pilihan bawaan -->
             </div>
@@ -512,7 +547,7 @@
             <button type="button" onclick="closeMemberModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold">
               Batal
             </button>
-            <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold flex items-center gap-2">
+            <button type="submit" id="btnSubmitMainForm" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold flex items-center gap-2">
               <i class="fa-solid fa-floppy-disk"></i> Simpan Data
             </button>
           </div>
@@ -532,7 +567,7 @@
       </div>
 
       <p class="text-slate-300 leading-relaxed">
-        Tempelkan <strong>Web App URL</strong> dari Google Apps Script untuk menyimpan data silsilah keluarga secara permanen:
+        Tempelkan <strong>Web App URL</strong> dari Google Apps Script untuk menyimpan data silsilah dan foto anggota secara permanen ke Google Drive & Sheets Anda:
       </p>
 
       <div>
@@ -680,7 +715,7 @@
     }
 
     function renderAppHeader() {
-      document.getElementById("treeTitle").innerHTML = `<i class="fa-solid fa-seedling text-emerald-400 text-lg mr-2"></i><span>${treeTitle}</span>`;
+      document.getElementById("treeTitle").textContent = treeTitle;
       document.getElementById("treeDesc").textContent = treeDesc;
     }
 
@@ -690,7 +725,7 @@
         if (customPhoto.includes("drive.google.com/file/d/")) {
           const match = customPhoto.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
           if (match && match[1]) {
-            return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+            return `https://lh3.googleusercontent.com/d/${match[1]}`;
           }
         }
         return customPhoto;
@@ -735,6 +770,55 @@
     }
 
     // ==========================================================
+    // FUNGSI UPLOAD FOTO OTOMATIS KE GOOGLE DRIVE
+    // ==========================================================
+    async function uploadPhotoToGoogleDrive(file, memberName = "anggota") {
+      const gasUrl = getGasUrl();
+      if (!gasUrl) {
+        throw new Error("Koneksi Google Apps Script belum dipasang. Silakan pasang di menu Koneksi Google Sheets.");
+      }
+
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+          try {
+            const dataUrl = e.target.result;
+            // Pisahkan Base64 murni dari header data URI
+            const base64Index = dataUrl.indexOf(";base64,");
+            if (base64Index === -1) throw new Error("Format berkas foto tidak valid");
+            const pureBase64 = dataUrl.substring(base64Index + 8);
+            const mimeType = file.type || "image/jpeg";
+            const cleanFileName = `foto_${memberName.replace(/[^a-zA-Z0-9]/g, "_")}_${Date.now()}.jpg`;
+
+            const payload = {
+              action: "upload_photo",
+              fileName: cleanFileName,
+              mimeType: mimeType,
+              base64Data: pureBase64
+            };
+
+            const response = await fetch(gasUrl, {
+              method: "POST",
+              headers: { "Content-Type": "text/plain;charset=utf-8" },
+              body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+            if (result && result.status === "success" && result.photoUrl) {
+              resolve(result.photoUrl);
+            } else {
+              throw new Error(result.message || "Gagal mengunggah foto ke Google Drive");
+            }
+          } catch (err) {
+            reject(err);
+          }
+        };
+        reader.onerror = () => reject(new Error("Gagal membaca berkas foto"));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // ==========================================================
     // FITUR GALERI FOTO ANGGOTA KELUARGA
     // ==========================================================
     function openGalleryModal() {
@@ -772,8 +856,8 @@
       });
 
       const totalPhotos = processed.filter(m => m.photo && m.photo.trim() !== "" && !m.photo.includes("ui-avatars.com")).length;
-      document.getElementById("gallerySubtitle").textContent = `Menampilkan ${filtered.length} dari ${processed.length} anggota keluarga (${totalPhotos} anggota berfoto)`;
-      document.getElementById("galleryStatsText").textContent = `Total ${processed.length} Anggota | ${totalPhotos} Foto Asli Tersimpan`;
+      document.getElementById("gallerySubtitle").textContent = `Menampilkan ${filtered.length} dari ${processed.length} anggota keluarga (${totalPhotos} foto tersimpan)`;
+      document.getElementById("galleryStatsText").textContent = `Total ${processed.length} Anggota | ${totalPhotos} Foto Tersimpan di Google Drive`;
 
       if (filtered.length === 0) {
         container.innerHTML = `
@@ -806,7 +890,7 @@
 
               <!-- Badge Status Foto -->
               ${hasCustomPhoto 
-                ? '<span class="absolute top-2 right-2 bg-emerald-950/90 text-emerald-300 border border-emerald-700 text-[9px] font-bold px-1.5 py-0.5 rounded-full"><i class="fa-solid fa-camera mr-1"></i>Foto</span>'
+                ? '<span class="absolute top-2 right-2 bg-emerald-950/90 text-emerald-300 border border-emerald-700 text-[9px] font-bold px-1.5 py-0.5 rounded-full"><i class="fa-brands fa-google-drive mr-1"></i>Drive</span>'
                 : '<span class="absolute top-2 right-2 bg-slate-900/90 text-slate-400 border border-slate-700 text-[9px] px-1.5 py-0.5 rounded-full">Avatar</span>'}
 
               <!-- Overlay Hover Zoom -->
@@ -870,7 +954,7 @@
       document.getElementById("lightboxModal").classList.add("hidden");
     }
 
-    // MODAL CEPAT PASANG FOTO
+    // MODAL CEPAT PASANG FOTO DARI GALERI KE GOOGLE DRIVE
     function openQuickPhotoModal(memberId) {
       const member = familyData.find(m => m.id === memberId);
       if (!member) return;
@@ -881,6 +965,8 @@
       document.getElementById("quickPhotoFileInput").value = "";
       document.getElementById("quickPhotoUrlInput").value = (member.photo && member.photo.startsWith("http") && !member.photo.includes("ui-avatars.com")) ? member.photo : "";
       document.getElementById("quickPhotoPreview").src = getSafeAvatarUrl(member.name, member.gender, member.photo);
+      document.getElementById("quickPhotoLoadingOverlay").classList.add("hidden");
+      document.getElementById("quickPhotoStatusHint").textContent = "Foto otomatis disimpan di Google Drive Anda.";
 
       document.getElementById("quickPhotoModal").classList.remove("hidden");
     }
@@ -889,50 +975,39 @@
       document.getElementById("quickPhotoModal").classList.add("hidden");
     }
 
-    function handleQuickPhotoUpload(e) {
+    async function handleQuickPhotoUpload(e) {
       const file = e.target.files[0];
       if (!file) return;
 
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        const img = new Image();
-        img.onload = function() {
-          const canvas = document.createElement("canvas");
-          const maxDim = 150;
-          let width = img.width;
-          let height = img.height;
+      const memberName = document.getElementById("quickPhotoMemberName").textContent || "anggota";
+      const loadingOverlay = document.getElementById("quickPhotoLoadingOverlay");
+      const statusHint = document.getElementById("quickPhotoStatusHint");
+      const btnSubmit = document.getElementById("btnSubmitQuickPhoto");
 
-          if (width > height) {
-            if (width > maxDim) {
-              height = Math.round((height * maxDim) / width);
-              width = maxDim;
-            }
-          } else {
-            if (height > maxDim) {
-              width = Math.round((width * maxDim) / height);
-              height = maxDim;
-            }
-          }
+      loadingOverlay.classList.remove("hidden");
+      statusHint.innerHTML = `<span class="text-amber-400"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Mengunggah ke Google Drive...</span>`;
+      btnSubmit.disabled = true;
 
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0, width, height);
-
-          const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.65);
-          document.getElementById("quickPhotoData").value = compressedDataUrl;
-          document.getElementById("quickPhotoPreview").src = compressedDataUrl;
-          document.getElementById("quickPhotoUrlInput").value = "";
-        };
-        img.src = evt.target.result;
-      };
-      reader.readAsDataURL(file);
+      try {
+        const driveUrl = await uploadPhotoToGoogleDrive(file, memberName);
+        document.getElementById("quickPhotoData").value = driveUrl;
+        document.getElementById("quickPhotoPreview").src = driveUrl;
+        document.getElementById("quickPhotoUrlInput").value = driveUrl;
+        statusHint.innerHTML = `<span class="text-emerald-400 font-semibold"><i class="fa-solid fa-circle-check mr-1"></i> Berhasil diunggah ke Google Drive!</span>`;
+      } catch (err) {
+        console.error("Gagal auto upload:", err);
+        statusHint.innerHTML = `<span class="text-rose-400 font-semibold"><i class="fa-solid fa-circle-xmark mr-1"></i> ${err.message || 'Gagal unggah foto'}</span>`;
+        alert("Peringatan: " + err.message);
+      } finally {
+        loadingOverlay.classList.add("hidden");
+        btnSubmit.disabled = false;
+      }
     }
 
     function handleQuickPhotoUrlInput(url) {
       if (url && url.trim() !== "") {
         document.getElementById("quickPhotoData").value = url.trim();
-        document.getElementById("quickPhotoPreview").src = url.trim();
+        document.getElementById("quickPhotoPreview").src = getSafeAvatarUrl("", "male", url.trim());
       }
     }
 
@@ -944,6 +1019,7 @@
         document.getElementById("quickPhotoData").value = initialUrl;
         document.getElementById("quickPhotoPreview").src = initialUrl;
         document.getElementById("quickPhotoUrlInput").value = "";
+        document.getElementById("quickPhotoStatusHint").textContent = "Menggunakan inisial nama otomatis.";
       }
     }
 
@@ -961,6 +1037,35 @@
       }
     }
 
+    // UPLOAD FOTO DARI FORM UTAMA DENGAN AUTO GOOGLE DRIVE
+    async function handleFormPhotoUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const memberName = document.getElementById("formName").value.trim() || "anggota";
+      const loading = document.getElementById("formPhotoLoading");
+      const statusText = document.getElementById("formPhotoUploadStatus");
+      const btnSubmit = document.getElementById("btnSubmitMainForm");
+
+      loading.classList.remove("hidden");
+      statusText.innerHTML = `<span class="text-amber-400"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Upload ke Google Drive...</span>`;
+      btnSubmit.disabled = true;
+
+      try {
+        const driveUrl = await uploadPhotoToGoogleDrive(file, memberName);
+        document.getElementById("formPhotoData").value = driveUrl;
+        document.getElementById("formPhotoPreview").src = driveUrl;
+        statusText.innerHTML = `<span class="text-emerald-400 font-semibold"><i class="fa-solid fa-check mr-1"></i> Tersimpan di Drive</span>`;
+      } catch (err) {
+        console.error("Gagal auto upload:", err);
+        statusText.innerHTML = `<span class="text-rose-400 font-semibold">Gagal upload: ${err.message}</span>`;
+        alert("Gagal mengunggah foto ke Google Drive: " + err.message);
+      } finally {
+        loading.classList.add("hidden");
+        btnSubmit.disabled = false;
+      }
+    }
+
     // ==========================================================
     // SINKRONISASI CLOUD DENGAN GOOGLE SHEETS
     // ==========================================================
@@ -975,7 +1080,7 @@
 
       if (!gasUrl) {
         syncDot.className = "w-2 h-2 rounded-full bg-amber-400";
-        syncText.textContent = "Mode Offline (Lokal)";
+        syncText.textContent = "Mode Offline";
         syncBadge.title = "Belum terhubung ke Google Sheets. Klik untuk pasang URL.";
         loadFromLocalStorageOrSample();
         if (refreshIcon) refreshIcon.classList.remove("fa-spin");
@@ -1001,8 +1106,8 @@
           initFamilyTree();
 
           syncDot.className = "w-2 h-2 rounded-full bg-emerald-400";
-          syncText.textContent = "Tersambung (Google Sheets)";
-          syncBadge.title = "Data sinkron dengan Google Sheets Anda.";
+          syncText.textContent = "Tersambung (Cloud)";
+          syncBadge.title = "Data sinkron dengan Google Sheets & Drive Anda.";
         } else {
           syncDot.className = "w-2 h-2 rounded-full bg-emerald-400";
           syncText.textContent = "Sheet Terhubung";
@@ -1012,7 +1117,7 @@
       } catch (err) {
         console.warn("Koneksi gagal, beralih ke cache lokal:", err);
         syncDot.className = "w-2 h-2 rounded-full bg-rose-400";
-        syncText.textContent = "Koneksi Gagal (Lokal)";
+        syncText.textContent = "Koneksi Gagal";
         loadFromLocalStorageOrSample();
       } finally {
         if (refreshIcon) refreshIcon.classList.remove("fa-spin");
@@ -1028,7 +1133,7 @@
       if (!gasUrl) return;
 
       syncDot.className = "w-2 h-2 rounded-full bg-amber-400 animate-pulse";
-      syncText.textContent = "Menyimpan ke Cloud...";
+      syncText.textContent = "Menyimpan...";
 
       try {
         const payload = {
@@ -1192,46 +1297,6 @@
           return false;
         }
       });
-    }
-
-    // UPLOAD FOTO DI FORM UTAMA
-    function handlePhotoUpload(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        const img = new Image();
-        img.onload = function() {
-          const canvas = document.createElement("canvas");
-          const maxDim = 150;
-          let width = img.width;
-          let height = img.height;
-
-          if (width > height) {
-            if (width > maxDim) {
-              height = Math.round((height * maxDim) / width);
-              width = maxDim;
-            }
-          } else {
-            if (height > maxDim) {
-              width = Math.round((width * maxDim) / height);
-              height = maxDim;
-            }
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0, width, height);
-
-          const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.65);
-          document.getElementById("formPhotoData").value = compressedDataUrl;
-          document.getElementById("formPhotoPreview").src = compressedDataUrl;
-        };
-        img.src = evt.target.result;
-      };
-      reader.readAsDataURL(file);
     }
 
     // PENCARIAN ANGGOTA
@@ -1418,6 +1483,7 @@
       document.getElementById("formPhotoData").value = "";
       document.getElementById("formPhotoFile").value = "";
       document.getElementById("formPhotoPreview").src = getSafeAvatarUrl("", "male", "");
+      document.getElementById("formPhotoUploadStatus").textContent = "";
       toggleDeceasedYear("alive");
     }
 
