@@ -6,14 +6,14 @@
   <title>Silsilah Keluarga Besar</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FamilyTreeJS library -->
+  <!-- Balkan FamilyTreeJS library -->
   <script src="https://balkan.app/js/FamilyTree.js"></script>
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <!-- Google Fonts: Inter & Outfit -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
 
   <style>
     body {
@@ -33,174 +33,152 @@
       z-index: 1;
     }
 
-    /* Style Garis Silsilah Dipertegas & Degradasi */
+    /* Garis Penghubung Silsilah Dipertegas */
     [data-bft-link] {
-      stroke-width: 4px !important;
+      stroke-width: 3.5px !important;
       stroke-linecap: round;
+      stroke: #6366f1 !important;
       filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.45));
-      transition: stroke 0.3s ease, stroke-width 0.3s ease;
+      transition: stroke 0.3s ease;
     }
-    .link-gen-1 { stroke: #f59e0b !important; }
-    .link-gen-2 { stroke: #6366f1 !important; }
-    .link-gen-3 { stroke: #0284c7 !important; }
-    .link-gen-4 { stroke: #10b981 !important; }
-    .link-gen-5 { stroke: #f97316 !important; }
-    .link-gen-6 { stroke: #14b8a6 !important; }
-    .link-gen-7 { stroke: #a855f7 !important; }
 
     /* Custom Scrollbar */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: rgba(15, 23, 42, 0.6);
-    }
-    ::-webkit-scrollbar-thumb {
-      background: rgba(100, 116, 139, 0.5);
-      border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(148, 163, 184, 0.8);
-    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+    ::-webkit-scrollbar-thumb { background: rgba(100, 116, 139, 0.5); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.8); }
 
-    /* Balkan Tree Node Styling */
-    .bft-node {
-      cursor: pointer;
-      transition: transform 0.2s ease;
-    }
-    .bft-node:hover {
-      filter: brightness(1.08);
-    }
+    .bft-node { cursor: pointer; }
+    .bft-node:hover rect { filter: brightness(1.15); stroke-width: 2.5px; }
   </style>
 </head>
 <body class="text-slate-100 select-none">
 
-  <!-- SVG Gradient Definitions untuk Garis Hubung -->
-  <svg style="position: absolute; width: 0; height: 0; overflow: hidden;" aria-hidden="true">
-    <defs>
-      <linearGradient id="gradGen1" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stop-color="#f59e0b" stop-opacity="1" />
-        <stop offset="100%" stop-color="#6366f1" stop-opacity="0.9" />
-      </linearGradient>
-      <linearGradient id="gradGen2" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stop-color="#6366f1" stop-opacity="1" />
-        <stop offset="100%" stop-color="#0284c7" stop-opacity="0.9" />
-      </linearGradient>
-      <linearGradient id="gradGen3" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stop-color="#0284c7" stop-opacity="1" />
-        <stop offset="100%" stop-color="#10b981" stop-opacity="0.9" />
-      </linearGradient>
-      <linearGradient id="gradGen4" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stop-color="#10b981" stop-opacity="1" />
-        <stop offset="100%" stop-color="#f97316" stop-opacity="0.9" />
-      </linearGradient>
-      <linearGradient id="gradGen5" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stop-color="#f97316" stop-opacity="1" />
-        <stop offset="100%" stop-color="#14b8a6" stop-opacity="0.9" />
-      </linearGradient>
-    </defs>
-  </svg>
-
-  <!-- Pohon Silsilah Canvas -->
+  <!-- Kanvas Utama Pohon Silsilah -->
   <div id="tree"></div>
 
-  <!-- HEADER UTAMA (Nama Silsilah, Pencarian Terpadu & Menu Edit) -->
-  <div class="fixed top-4 left-1/2 -translate-x-1/2 z-30 w-11/12 max-w-2xl">
-    <div class="bg-slate-900/90 backdrop-blur-md border border-slate-700/80 rounded-2xl p-4 shadow-2xl flex flex-col gap-3">
+  <!-- NAVBAR ATAS RAMPING MEMANJANG (TIDAK MENUTUPI POHON KELUARGA) -->
+  <header class="fixed top-0 left-0 right-0 z-30 w-full bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-3 sm:px-6 py-2.5 shadow-2xl">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2.5">
       
-      <!-- Baris Atas: Judul Silsilah, Indikator Cloud Database, dan Tombol Menu -->
-      <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
-        <div>
-          <h1 id="treeTitle" class="text-xl md:text-2xl font-bold font-outfit text-white tracking-wide flex items-center gap-2">
-            <i class="fa-solid fa-seedling text-emerald-400 text-lg"></i>
-            <span>Silsilah Trah Keluarga Besar</span>
-          </h1>
-          <p id="treeDesc" class="text-xs text-slate-400 mt-0.5">Bagan Garis Keturunan Generasi Terhubung</p>
+      <!-- Sisi Kiri: Judul Trah Silsilah -->
+      <div class="flex items-center justify-between w-full md:w-auto">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-emerald-950 border border-emerald-700 flex items-center justify-center text-emerald-400 shrink-0">
+            <i class="fa-solid fa-seedling text-base"></i>
+          </div>
+          <div>
+            <h1 id="treeTitle" class="text-sm sm:text-base font-bold font-outfit text-white tracking-wide truncate max-w-xs sm:max-w-md">
+              Silsilah Trah Keluarga Besar
+            </h1>
+            <p id="treeDesc" class="text-[11px] text-slate-400 truncate max-w-xs sm:max-w-md">
+              Bagan Garis Keturunan Generasi Terhubung
+            </p>
+          </div>
         </div>
 
-        <div class="flex items-center gap-2">
-          <!-- Indikator Sinkronisasi Database -->
-          <div id="syncBadge" title="Klik untuk cek status Google Sheets" onclick="openDatabaseModal()" class="cursor-pointer flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-500 transition-all">
-            <span id="syncDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-            <span id="syncText" class="hidden sm:inline">Menghubungkan...</span>
-          </div>
-
-          <!-- Tombol Segarkan Data -->
-          <button onclick="fetchDataFromCloud(true)" title="Segarkan Data Terbaru dari Google Sheets" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 hover:text-white transition-all">
-            <i id="refreshIcon" class="fa-solid fa-arrows-rotate text-sm"></i>
+        <!-- Tombol Aksi Mobile (Hanya tampil di HP) -->
+        <div class="flex items-center gap-1.5 md:hidden">
+          <button onclick="openGalleryModal()" title="Galeri Foto" class="p-2 rounded-xl bg-emerald-600 text-white text-xs">
+            <i class="fa-solid fa-images"></i>
           </button>
-
-          <!-- Dropdown Menu Edit -->
-          <div class="relative">
-            <button id="btnMenuEdit" onclick="toggleMenuEdit()" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-3 py-2 rounded-xl shadow-lg shadow-indigo-600/30 transition-all">
-              <i class="fa-solid fa-pen-to-square"></i>
-              <span>Menu Edit</span>
-              <i class="fa-solid fa-chevron-down text-[10px] ml-0.5"></i>
-            </button>
-
-            <!-- Popup Menu Dropdown -->
-            <div id="dropdownMenuEdit" class="hidden absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl py-1.5 z-40 text-xs">
-              <button onclick="openAddMemberModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-emerald-400">
-                <i class="fa-solid fa-user-plus w-4"></i> Tambah Anggota Baru
-              </button>
-              <button onclick="openSelectEditModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-blue-400">
-                <i class="fa-solid fa-user-pen w-4"></i> Pilih & Edit Anggota
-              </button>
-              <button onclick="openSelectDeleteModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-rose-400">
-                <i class="fa-solid fa-user-minus w-4"></i> Pilih & Hapus Anggota
-              </button>
-              <div class="my-1 border-t border-slate-800"></div>
-              <button onclick="openTitleEditModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-slate-300">
-                <i class="fa-solid fa-heading w-4 text-amber-400"></i> Ubah Judul & Info Trah
-              </button>
-              <button onclick="openGenerationTitleModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-slate-300">
-                <i class="fa-solid fa-tags w-4 text-purple-400"></i> Kelola Gelar Generasi
-              </button>
-              <button onclick="openDatabaseModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-emerald-300">
-                <i class="fa-solid fa-database w-4 text-emerald-400"></i> Koneksi Google Sheets
-              </button>
-              <div class="my-1 border-t border-slate-800"></div>
-              <button onclick="exportDataJson(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-slate-300">
-                <i class="fa-solid fa-file-export w-4 text-cyan-400"></i> Backup Data (JSON)
-              </button>
-              <button onclick="triggerImportJson(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-slate-300">
-                <i class="fa-solid fa-file-import w-4 text-teal-400"></i> Pulihkan Data (JSON)
-              </button>
-              <button onclick="confirmResetToSingleAncestor(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-rose-950/40 text-rose-400 flex items-center gap-2.5">
-                <i class="fa-solid fa-rotate-left w-4"></i> Reset ke 1 Leluhur Awal
-              </button>
-            </div>
-          </div>
+          <button onclick="toggleMenuEdit()" class="p-2 rounded-xl bg-indigo-600 text-white text-xs">
+            <i class="fa-solid fa-bars"></i>
+          </button>
         </div>
       </div>
 
-      <!-- Baris Bawah: Pencarian Terpadu Tepat di Bawah Nama Silsilah -->
-      <div class="relative">
+      <!-- Sisi Tengah: Kolom Pencarian Cepat Memanjang -->
+      <div class="relative w-full md:max-w-md lg:max-w-lg">
         <div class="relative flex items-center">
-          <i class="fa-solid fa-magnifying-glass absolute left-3.5 text-slate-400 text-sm"></i>
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 text-slate-400 text-xs"></i>
           <input 
             type="text" 
             id="searchInput"
-            placeholder="Cari nama, gelar (Eyang, Cicit), atau no. telepon..." 
-            class="w-full bg-slate-800/90 border border-slate-700 focus:border-indigo-500 rounded-xl pl-10 pr-10 py-2.5 text-xs md:text-sm text-white placeholder-slate-400 focus:outline-none transition-all shadow-inner"
+            placeholder="Cari nama anggota keluarga atau gelar..." 
+            class="w-full bg-slate-800/90 border border-slate-700 focus:border-indigo-500 rounded-xl pl-9 pr-9 py-1.5 text-xs text-white placeholder-slate-400 focus:outline-none transition-all shadow-inner"
             oninput="handleSearch(this.value)"
           />
           <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-3 text-slate-400 hover:text-white">
-            <i class="fa-solid fa-xmark text-sm"></i>
+            <i class="fa-solid fa-xmark text-xs"></i>
           </button>
         </div>
 
         <!-- Dropdown Hasil Pencarian -->
-        <div id="searchResults" class="hidden absolute left-0 right-0 mt-2 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl max-h-64 overflow-y-auto z-40 divide-y divide-slate-800/80 text-xs">
-          <!-- Hasil dicantumkan secara dinamis -->
+        <div id="searchResults" class="hidden absolute left-0 right-0 mt-2 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl max-h-64 overflow-y-auto z-40 divide-y divide-slate-800 text-xs"></div>
+      </div>
+
+      <!-- Sisi Kanan: Tombol Aksi Horizontal Ramping (Laptop / Desktop) -->
+      <div class="hidden md:flex items-center gap-2">
+        
+        <!-- Tombol Galeri Foto -->
+        <button onclick="openGalleryModal()" title="Buka Album & Galeri Foto Keluarga" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/30 transition-all">
+          <i class="fa-solid fa-images"></i>
+          <span>Galeri Foto</span>
+        </button>
+
+        <!-- Indikator Cloud Database Google Sheets -->
+        <div id="syncBadge" title="Klik untuk atur URL Google Sheets" onclick="openDatabaseModal()" class="cursor-pointer flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium border bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-500 transition-all">
+          <span id="syncDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+          <span id="syncText">Menghubungkan...</span>
         </div>
+
+        <!-- Tombol Segarkan Data -->
+        <button onclick="fetchDataFromCloud(true)" title="Segarkan Data Terbaru dari Google Sheets" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 hover:text-white transition-all">
+          <i id="refreshIcon" class="fa-solid fa-arrows-rotate text-xs"></i>
+        </button>
+
+        <!-- Dropdown Menu Edit -->
+        <div class="relative">
+          <button id="btnMenuEdit" onclick="toggleMenuEdit()" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-3 py-1.5 rounded-xl shadow-lg shadow-indigo-600/30 transition-all">
+            <i class="fa-solid fa-pen-to-square"></i>
+            <span>Menu Edit</span>
+            <i class="fa-solid fa-chevron-down text-[10px] ml-0.5"></i>
+          </button>
+
+          <!-- Popup Menu Dropdown -->
+          <div id="dropdownMenuEdit" class="hidden absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl py-1.5 z-40 text-xs">
+            <button onclick="openAddMemberModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-emerald-400">
+              <i class="fa-solid fa-user-plus w-4"></i> Tambah Anggota Baru
+            </button>
+            <button onclick="openGalleryModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-emerald-300">
+              <i class="fa-solid fa-images w-4"></i> Kelola Foto Anggota
+            </button>
+            <button onclick="openSelectEditModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-blue-400">
+              <i class="fa-solid fa-user-pen w-4"></i> Pilih & Edit Anggota
+            </button>
+            <button onclick="openSelectDeleteModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-rose-400">
+              <i class="fa-solid fa-user-minus w-4"></i> Pilih & Hapus Anggota
+            </button>
+            <div class="my-1 border-t border-slate-800"></div>
+            <button onclick="openTitleEditModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-slate-300">
+              <i class="fa-solid fa-heading w-4 text-amber-400"></i> Ubah Judul & Info Trah
+            </button>
+            <button onclick="openGenerationTitleModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-slate-300">
+              <i class="fa-solid fa-tags w-4 text-purple-400"></i> Kelola Gelar Generasi
+            </button>
+            <button onclick="openDatabaseModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-emerald-300">
+              <i class="fa-solid fa-database w-4 text-emerald-400"></i> Koneksi Google Sheets
+            </button>
+            <div class="my-1 border-t border-slate-800"></div>
+            <button onclick="exportDataJson(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-slate-300">
+              <i class="fa-solid fa-file-export w-4 text-cyan-400"></i> Backup Data (JSON)
+            </button>
+            <button onclick="triggerImportJson(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-slate-300">
+              <i class="fa-solid fa-file-import w-4 text-teal-400"></i> Pulihkan Data (JSON)
+            </button>
+            <button onclick="confirmResetToSingleAncestor(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-rose-950/40 text-rose-400 flex items-center gap-2.5">
+              <i class="fa-solid fa-rotate-left w-4"></i> Reset ke 1 Leluhur Awal
+            </button>
+          </div>
+        </div>
+
       </div>
 
     </div>
-  </div>
+  </header>
 
-  <!-- FLOATING NAVIGATION & ZOOM CONTROLS (Pojok Kanan Bawah) -->
+  <!-- KONTROL ZOOM (Pojok Kanan Bawah) -->
   <div class="fixed bottom-6 right-6 z-20 flex flex-col gap-2">
     <button onclick="tree.fit()" title="Tengahkan Bagan Silsilah" class="w-10 h-10 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white shadow-xl flex items-center justify-center transition-all">
       <i class="fa-solid fa-expand"></i>
@@ -213,26 +191,148 @@
     </button>
   </div>
 
-  <!-- FLOATING COLOR LEGEND (Pojok Kiri Bawah) -->
-  <div class="fixed bottom-6 left-6 z-20 hidden md:block">
-    <div class="bg-slate-900/85 backdrop-blur-md border border-slate-800 rounded-xl p-3 shadow-xl max-w-xs text-xs">
-      <div class="font-semibold text-slate-300 mb-2 flex items-center gap-1.5">
-        <i class="fa-solid fa-layer-group text-indigo-400"></i> Degradasi Garis Silsilah
+  <!-- MODAL: GALERI & ALBUM FOTO ANGGOTA KELUARGA -->
+  <div id="galleryModal" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-5">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-4xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
+      
+      <!-- Header Galeri -->
+      <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-850">
+        <div>
+          <h2 class="text-base sm:text-lg font-bold font-outfit text-white flex items-center gap-2">
+            <i class="fa-solid fa-images text-emerald-400"></i>
+            <span>Galeri & Album Foto Keluarga</span>
+          </h2>
+          <p id="gallerySubtitle" class="text-xs text-slate-400 mt-0.5">Koleksi foto dokumentasi seluruh anggota trah keluarga</p>
+        </div>
+        <button onclick="closeGalleryModal()" class="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-800">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
       </div>
-      <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] text-slate-400">
-        <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> Gen 1: Leluhur</div>
-        <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span> Gen 2: Eyang Buyut</div>
-        <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-sky-500"></span> Gen 3: Kakek / Nenek</div>
-        <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Gen 4: Orang Tua</div>
-        <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span> Gen 5: Anak / Sepupu</div>
-        <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-teal-400"></span> Gen 6+: Cucu / Cicit</div>
+
+      <!-- Filter & Pencarian Galeri -->
+      <div class="p-3.5 bg-slate-850 border-b border-slate-800 flex flex-col sm:flex-row gap-2.5 items-center justify-between text-xs">
+        <div class="relative w-full sm:w-72">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400"></i>
+          <input 
+            type="text" 
+            id="gallerySearchInput" 
+            placeholder="Cari foto nama anggota..." 
+            oninput="renderGalleryGrid()"
+            class="w-full bg-slate-800 border border-slate-700 focus:border-emerald-500 rounded-xl pl-9 pr-3 py-2 text-white focus:outline-none"
+          />
+        </div>
+
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <!-- Filter Generasi -->
+          <select id="galleryGenFilter" onchange="renderGalleryGrid()" class="flex-1 sm:flex-none bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 focus:outline-none">
+            <option value="all">Semua Generasi</option>
+            <option value="has_photo">Hanya yang Memiliki Foto Asli</option>
+            <option value="gen1">Generasi 1</option>
+            <option value="gen2">Generasi 2</option>
+            <option value="gen3">Generasi 3</option>
+            <option value="gen4">Generasi 4</option>
+            <option value="gen5">Generasi 5</option>
+            <option value="gen6">Generasi 6+</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Grid Foto Anggota -->
+      <div id="galleryGridContainer" class="p-4 sm:p-5 overflow-y-auto flex-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 sm:gap-4">
+        <!-- Render otomatis via JavaScript -->
+      </div>
+
+      <!-- Footer Galeri -->
+      <div class="p-3.5 border-t border-slate-800 bg-slate-850 flex items-center justify-between text-xs text-slate-400">
+        <span id="galleryStatsText">Memuat foto...</span>
+        <button onclick="closeGalleryModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl transition-all">
+          Tutup Galeri
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- DRAWER DETAIL ANGGOTA (Kanan Layar) -->
+  <!-- LIGHTBOX / FULLSCREEN FOTO VIEWER -->
+  <div id="lightboxModal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-lg z-50 flex items-center justify-center p-4" onclick="closeLightbox()">
+    <div class="relative max-w-xl w-full flex flex-col items-center" onclick="event.stopPropagation()">
+      <button onclick="closeLightbox()" class="absolute -top-10 right-0 text-white/80 hover:text-white text-2xl p-2">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <img id="lightboxImg" src="" class="max-h-[75vh] w-auto max-w-full rounded-2xl shadow-2xl object-contain border-2 border-slate-700" />
+      <div class="mt-3.5 text-center">
+        <h3 id="lightboxTitle" class="text-lg font-bold font-outfit text-white">Nama Anggota</h3>
+        <p id="lightboxSubtitle" class="text-xs text-indigo-300 font-medium">Gen 1 - Leluhur</p>
+        <p id="lightboxBio" class="text-xs text-slate-400 mt-1 max-w-md mx-auto italic">Catatan</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CEPAT PASANG / GANTI FOTO KE GOOGLE DRIVE -->
+  <div id="quickPhotoModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl p-5 space-y-4 text-xs">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2 font-outfit">
+          <i class="fa-solid fa-camera text-indigo-400"></i> Pasang Foto (Auto Simpan ke Google Drive)
+        </h3>
+        <button onclick="closeQuickPhotoModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <input type="hidden" id="quickPhotoMemberId" />
+      <input type="hidden" id="quickPhotoData" />
+
+      <div class="text-center space-y-2">
+        <div class="relative w-24 h-24 mx-auto">
+          <img id="quickPhotoPreview" src="" class="w-24 h-24 rounded-2xl object-cover border-2 border-indigo-500 bg-slate-800 shadow-lg" />
+          <div id="quickPhotoLoadingOverlay" class="hidden absolute inset-0 bg-slate-950/80 rounded-2xl flex flex-col items-center justify-center text-emerald-400">
+            <i class="fa-solid fa-circle-notch fa-spin text-xl mb-1"></i>
+            <span class="text-[9px] font-bold">Uploading...</span>
+          </div>
+        </div>
+        <h4 id="quickPhotoMemberName" class="font-bold text-sm text-white">Nama Anggota</h4>
+        <p id="quickPhotoStatusHint" class="text-[10px] text-slate-400">Foto otomatis disimpan di Google Drive Anda.</p>
+      </div>
+
+      <!-- Opsi 1: Upload dari File Komputer / HP (Auto Drive Upload) -->
+      <div class="p-3 bg-slate-800/60 rounded-xl border border-slate-700 space-y-2">
+        <label class="block text-slate-300 font-semibold flex items-center justify-between">
+          <span>Pilih Foto dari Galeri / Kamera</span>
+          <span class="text-[10px] text-emerald-400"><i class="fa-brands fa-google-drive mr-1"></i>Auto ke Drive</span>
+        </label>
+        <label for="quickPhotoFileInput" class="cursor-pointer flex items-center justify-center gap-2 w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition-all shadow-md">
+          <i class="fa-solid fa-upload"></i> Pilih Berkas Foto
+        </label>
+        <input type="file" id="quickPhotoFileInput" accept="image/*" class="hidden" onchange="handleQuickPhotoUpload(event)" />
+        <p class="text-[10px] text-slate-400 text-center">*Fotonya tersimpan di folder Google Drive dan aman dari limit Google Sheets.</p>
+      </div>
+
+      <!-- Opsi 2: Tautan URL Foto / Google Drive Manual -->
+      <div class="p-3 bg-slate-800/60 rounded-xl border border-slate-700 space-y-1.5">
+        <label class="block text-slate-300 font-semibold">Atau Tempel Link URL Foto / Google Drive</label>
+        <input 
+          type="url" 
+          id="quickPhotoUrlInput" 
+          placeholder="https://drive.google.com/... atau https://...foto.jpg"
+          oninput="handleQuickPhotoUrlInput(this.value)"
+          class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none"
+        />
+      </div>
+
+      <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+        <button type="button" onclick="resetToInitialAvatarInQuickPhoto()" class="text-rose-400 hover:underline">
+          Pakai Inisial Saja
+        </button>
+        <div class="flex gap-2">
+          <button type="button" onclick="closeQuickPhotoModal()" class="px-4 py-2 bg-slate-800 rounded-xl text-slate-300 font-semibold">Batal</button>
+          <button type="button" id="btnSubmitQuickPhoto" onclick="saveQuickPhoto()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl flex items-center gap-1.5">
+            <i class="fa-solid fa-check"></i> Simpan Foto
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DRAWER DETAIL PROFIL (Sisi Kanan) -->
   <div id="detailDrawer" class="fixed top-0 right-0 h-full w-full sm:w-96 bg-slate-900/95 backdrop-blur-lg border-l border-slate-800 shadow-2xl z-40 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
-    <!-- Header Drawer -->
     <div class="p-4 border-b border-slate-800 flex items-center justify-between">
       <div class="flex items-center gap-2">
         <span id="drawerBadgeGen" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-950 text-indigo-300 border border-indigo-700">Gen 1</span>
@@ -243,20 +343,22 @@
       </button>
     </div>
 
-    <!-- Body Drawer -->
     <div class="p-6 overflow-y-auto flex-1 space-y-5 text-sm">
       <div class="flex flex-col items-center text-center">
-        <div class="relative">
-          <img id="drawerAvatar" src="" alt="Avatar" class="w-28 h-28 rounded-2xl object-cover border-4 border-slate-700 shadow-lg" />
+        <div class="relative group cursor-pointer" onclick="openLightboxFromDrawer()">
+          <img id="drawerAvatar" src="" alt="Avatar" class="w-28 h-28 rounded-2xl object-cover border-4 border-slate-700 shadow-lg bg-slate-800 group-hover:border-indigo-400 transition-all" />
           <span id="drawerGenderIcon" class="absolute bottom-1 right-1 w-7 h-7 rounded-full flex items-center justify-center text-white text-xs border-2 border-slate-900 bg-blue-500">
             <i class="fa-solid fa-mars"></i>
           </span>
+          <div class="absolute inset-0 bg-black/40 rounded-2xl opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs transition-opacity">
+            <i class="fa-solid fa-magnifying-glass-plus mr-1"></i> Perbesar
+          </div>
         </div>
         <h2 id="drawerName" class="text-xl font-bold font-outfit text-white mt-3">Nama Anggota</h2>
         <p id="drawerLifeSpan" class="text-xs text-slate-400 mt-0.5">1950 - Sekarang (Hidup)</p>
       </div>
 
-      <!-- Relasi Terdekat -->
+      <!-- Relasi Kekerabatan -->
       <div class="bg-slate-800/60 rounded-xl p-3.5 border border-slate-700/60 space-y-2.5 text-xs">
         <div class="font-semibold text-slate-300 flex items-center gap-1.5">
           <i class="fa-solid fa-people-arrows text-indigo-400"></i> Relasi Kekerabatan
@@ -281,15 +383,7 @@
         </div>
       </div>
 
-      <!-- Kontak Telepon -->
-      <div class="bg-slate-800/60 rounded-xl p-3.5 border border-slate-700/60 text-xs">
-        <div class="font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
-          <i class="fa-solid fa-phone text-emerald-400"></i> Telepon
-        </div>
-        <div id="drawerPhoneWrap" class="text-slate-300">-</div>
-      </div>
-
-      <!-- Riwayat / Catatan -->
+      <!-- Riwayat Hidup / Catatan -->
       <div class="bg-slate-800/60 rounded-xl p-3.5 border border-slate-700/60 text-xs">
         <div class="font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
           <i class="fa-solid fa-book-open text-amber-400"></i> Catatan & Riwayat Hidup
@@ -298,7 +392,7 @@
       </div>
     </div>
 
-    <!-- Footer Drawer (Aksi Langsung) -->
+    <!-- Tombol Aksi di Drawer -->
     <div class="p-4 border-t border-slate-800 bg-slate-900 flex items-center gap-2">
       <button id="drawerBtnEdit" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold py-2.5 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
         <i class="fa-solid fa-pen"></i> Edit Profil
@@ -306,7 +400,7 @@
       <button id="drawerBtnAddChild" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold py-2.5 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
         <i class="fa-solid fa-child"></i> Tambah Anak
       </button>
-      <button id="drawerBtnDelete" title="Hapus Anggota Ini" class="bg-rose-950/80 hover:bg-rose-900 border border-rose-800 text-rose-300 text-xs py-2.5 px-3 rounded-xl transition-all">
+      <button id="drawerBtnDelete" title="Hapus Anggota Ini" class="bg-rose-950 hover:bg-rose-900 border border-rose-800 text-rose-300 text-xs py-2.5 px-3 rounded-xl transition-all">
         <i class="fa-solid fa-trash"></i>
       </button>
     </div>
@@ -314,8 +408,7 @@
 
   <!-- MODAL: FORM TAMBAH / EDIT ANGGOTA -->
   <div id="memberModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-      <!-- Header Modal -->
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
       <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-850">
         <h3 id="modalMemberTitle" class="text-base font-bold text-white font-outfit flex items-center gap-2">
           <i class="fa-solid fa-user-plus text-indigo-400"></i> Tambah Anggota Silsilah
@@ -325,21 +418,62 @@
         </button>
       </div>
 
-      <!-- Body Form -->
       <form id="memberForm" onsubmit="handleSaveMember(event)" class="p-5 overflow-y-auto space-y-4 text-xs">
         <input type="hidden" id="formMemberId" />
+        <input type="hidden" id="formPhotoData" />
 
         <!-- Nama Lengkap -->
         <div>
           <label class="block text-slate-300 font-semibold mb-1">Nama Lengkap <span class="text-rose-400">*</span></label>
-          <input type="text" id="formName" required placeholder="Contoh: Raden Ahmad Sudrajat" class="w-full bg-slate-800 border border-slate-700 focus:border-indigo-500 rounded-xl px-3 py-2 text-white focus:outline-none" />
+          <input type="text" id="formName" oninput="updateInitialPreview()" required placeholder="Contoh: Raden Ahmad Sudrajat" class="w-full bg-slate-800 border border-slate-700 focus:border-indigo-500 rounded-xl px-3 py-2 text-white focus:outline-none" />
+        </div>
+
+        <!-- PILIHAN FOTO / AVATAR KELUARGA (AUTO UPLOAD KE DRIVE) -->
+        <div class="p-3.5 bg-slate-800/60 rounded-xl border border-slate-700 space-y-3">
+          <label class="block text-slate-300 font-semibold flex items-center justify-between">
+            <span>Foto Profil Anggota</span>
+            <span id="formPhotoUploadStatus" class="text-[10px] text-slate-400"></span>
+          </label>
+          
+          <div class="flex items-center gap-3">
+            <div class="relative shrink-0 w-16 h-16">
+              <img id="formPhotoPreview" src="" class="w-16 h-16 rounded-xl object-cover border-2 border-indigo-500 bg-slate-700 shadow-md" />
+              <div id="formPhotoLoading" class="hidden absolute inset-0 bg-slate-950/80 rounded-xl flex items-center justify-center text-emerald-400 text-xs">
+                <i class="fa-solid fa-circle-notch fa-spin"></i>
+              </div>
+            </div>
+            <div class="flex-1 space-y-1">
+              <div class="flex flex-wrap gap-1.5">
+                <!-- Pilihan 1: Galeri HP/Laptop dengan Auto Upload ke Google Drive -->
+                <label for="formPhotoFile" class="cursor-pointer inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg transition-all text-[11px]">
+                  <i class="fa-solid fa-camera"></i>
+                  <span>Upload Foto (Drive)</span>
+                </label>
+                <input type="file" id="formPhotoFile" accept="image/*" class="hidden" onchange="handleFormPhotoUpload(event)" />
+
+                <!-- Pilihan 2: Avatar Inisial Nama Otomatis -->
+                <button type="button" onclick="selectInitialAvatar()" class="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold rounded-lg text-[11px] border border-slate-600">
+                  <i class="fa-solid fa-font mr-1"></i> Inisial Nama
+                </button>
+              </div>
+              <p class="text-[10px] text-slate-400">Pilih dari galeri untuk simpan otomatis ke Google Drive, atau pilih avatar bawaan di bawah ini:</p>
+            </div>
+          </div>
+
+          <!-- Koleksi Avatar Bawaan (Preset Kartun Ringan) -->
+          <div>
+            <div class="text-[10px] text-slate-400 mb-1.5 font-medium">Pilihan Karakter Cepat:</div>
+            <div class="grid grid-cols-6 gap-2" id="presetAvatarContainer">
+              <!-- Render 6 avatar pilihan bawaan -->
+            </div>
+          </div>
         </div>
 
         <!-- Gender & Status Hidup -->
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-slate-300 font-semibold mb-1">Jenis Kelamin</label>
-            <select id="formGender" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none">
+            <select id="formGender" onchange="onGenderChange()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none">
               <option value="male">Laki-laki (Ayah / Putra)</option>
               <option value="female">Perempuan (Ibu / Putri)</option>
             </select>
@@ -365,17 +499,11 @@
           </div>
         </div>
 
-        <!-- Nomor Telepon -->
-        <div>
-          <label class="block text-slate-300 font-semibold mb-1">Nomor Telepon / WhatsApp</label>
-          <input type="tel" id="formPhone" inputmode="tel" placeholder="Contoh: 081234567890" class="w-full bg-slate-800 border border-slate-700 focus:border-indigo-500 rounded-xl px-3 py-2 text-white focus:outline-none" />
-        </div>
-
-        <!-- Orang Tua (Ayah & Ibu) -->
+        <!-- Garis Orang Tua -->
         <div class="p-3 bg-slate-800/50 rounded-xl border border-slate-700/80 space-y-3">
           <div class="text-[11px] font-semibold text-indigo-300 flex items-center justify-between">
             <span><i class="fa-solid fa-sitemap mr-1"></i> GARIS ORANG TUA</span>
-            <span id="genAutoBadge" class="text-[10px] bg-indigo-900/80 text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-700">Otomatis Ditentukan</span>
+            <span id="genAutoBadge" class="text-[10px] bg-indigo-900/80 text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-700">Otomatis: Gen 1</span>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
@@ -396,7 +524,7 @@
           </div>
         </div>
 
-        <!-- Pasangan (Suami / Istri) -->
+        <!-- Pasangan -->
         <div>
           <label class="block text-slate-300 font-semibold mb-1">Pasangan (Suami / Istri)</label>
           <select id="formSpouse" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none">
@@ -404,19 +532,13 @@
           </select>
         </div>
 
-        <!-- URL Foto Avatar -->
+        <!-- Catatan -->
         <div>
-          <label class="block text-slate-300 font-semibold mb-1">Link URL Foto (Opsional)</label>
-          <input type="url" id="formPhoto" placeholder="https://domain.com/foto.jpg (Kosongkan untuk avatar bawaan)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none" />
+          <label class="block text-slate-300 font-semibold mb-1">Catatan Tambahan / Pekerjaan / Makam</label>
+          <textarea id="formBio" rows="2" placeholder="Catatan gelar adat, pekerjaan, alamat, atau makam..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none"></textarea>
         </div>
 
-        <!-- Catatan & Riwayat Singkat -->
-        <div>
-          <label class="block text-slate-300 font-semibold mb-1">Catatan Tambahan / Pekerjaan / Tempat Tinggal</label>
-          <textarea id="formBio" rows="2" placeholder="Catatan khusus, gelar adat, pekerjaan, atau lokasi makam..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none"></textarea>
-        </div>
-
-        <!-- Tombol Aksi Modal -->
+        <!-- Tombol Aksi Form -->
         <div class="pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
           <button type="button" id="formDeleteBtn" onclick="deleteCurrentFormMember()" class="hidden text-rose-400 hover:bg-rose-950/60 border border-rose-800 px-3 py-2 rounded-xl text-xs font-semibold">
             <i class="fa-solid fa-trash mr-1"></i> Hapus
@@ -425,7 +547,7 @@
             <button type="button" onclick="closeMemberModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold">
               Batal
             </button>
-            <button type="submit" id="btnSubmitForm" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold flex items-center gap-2">
+            <button type="submit" id="btnSubmitMainForm" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold flex items-center gap-2">
               <i class="fa-solid fa-floppy-disk"></i> Simpan Data
             </button>
           </div>
@@ -436,7 +558,7 @@
 
   <!-- MODAL: KONEKSI DATABASE GOOGLE SHEETS -->
   <div id="databaseModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden p-5 space-y-4 text-xs">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg shadow-2xl p-5 space-y-4 text-xs">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <h3 class="text-sm font-bold text-white flex items-center gap-2 font-outfit">
           <i class="fa-solid fa-database text-emerald-400"></i> Pengaturan Database Google Sheets
@@ -445,7 +567,7 @@
       </div>
 
       <p class="text-slate-300 leading-relaxed">
-        Sistem ini menyimpan data secara permanen di spreadsheet Google Drive pribadi Anda via <strong>Google Apps Script Web App</strong>. Semua kerabat yang membuka website ini akan melihat data yang sama (isi <code>DEFAULT_GAS_URL</code> di kode agar otomatis di semua perangkat).
+        Tempelkan <strong>Web App URL</strong> dari Google Apps Script untuk menyimpan data silsilah dan foto anggota secara permanen ke Google Drive & Sheets Anda:
       </p>
 
       <div>
@@ -453,25 +575,9 @@
         <input 
           type="url" 
           id="gasUrlInput" 
-          placeholder="https://script.google.com/macros/s/AKfycbx.../exec" 
-          class="w-full bg-slate-800 border border-slate-700 focus:border-emerald-500 rounded-xl px-3 py-2 text-white focus:outline-none text-xs font-mono"
+          placeholder="https://script.google.com/macros/s/AKfycb.../exec" 
+          class="w-full bg-slate-800 border border-slate-700 focus:border-emerald-500 rounded-xl px-3 py-2 text-white focus:outline-none font-mono"
         />
-        <p class="text-[11px] text-slate-400 mt-1">Dapatkan URL ini saat melakukan <em>Deploy as Web App</em> di Google Apps Script.</p>
-      </div>
-
-      <button onclick="copyShareLink()" class="w-full px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold">
-        <i class="fa-solid fa-link mr-1.5"></i> Salin link untuk HP lain (otomatis terhubung)
-      </button>
-
-      <div class="p-3 bg-slate-800/60 rounded-xl border border-slate-700 space-y-1 text-[11px] text-slate-300">
-        <div class="font-semibold text-emerald-400 flex items-center gap-1.5">
-          <i class="fa-solid fa-circle-info"></i> Petunjuk Singkat:
-        </div>
-        <div>1. Buat Google Sheet baru di Drive Anda.</div>
-        <div>2. Buka menu <strong>Ekstensi &rarr; Apps Script</strong> dan tempel kode script backend.</div>
-        <div>3. Klik <strong>Deploy &rarr; New deployment &rarr; Web app</strong>.</div>
-        <div>4. Pilih akses: <strong>Who has access: Anyone</strong> (Siapa saja).</div>
-        <div>5. Salin URL Web App dan tempelkan di kotak di atas.</div>
       </div>
 
       <div class="pt-2 flex items-center justify-end gap-2 border-t border-slate-800">
@@ -483,12 +589,12 @@
     </div>
   </div>
 
-  <!-- MODAL: UBAH JUDUL & INFO TRAH -->
+  <!-- MODAL: UBAH JUDUL TRAH -->
   <div id="titleEditModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl p-5 space-y-4 text-xs">
       <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
         <h3 class="text-sm font-bold text-white flex items-center gap-2 font-outfit">
-          <i class="fa-solid fa-heading text-amber-400"></i> Ubah Judul & Keterangan Trah
+          <i class="fa-solid fa-heading text-amber-400"></i> Ubah Judul Trah
         </h3>
         <button onclick="closeTitleEditModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
@@ -502,7 +608,7 @@
       </div>
       <div class="pt-2 flex justify-end gap-2 border-t border-slate-800">
         <button onclick="closeTitleEditModal()" class="px-4 py-2 bg-slate-800 rounded-xl text-slate-300">Batal</button>
-        <button onclick="saveTitleEdit()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-white font-semibold">Simpan Perubahan</button>
+        <button onclick="saveTitleEdit()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-white font-semibold">Simpan</button>
       </div>
     </div>
   </div>
@@ -512,22 +618,19 @@
     <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg shadow-2xl p-5 space-y-4 text-xs">
       <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
         <h3 class="text-sm font-bold text-white flex items-center gap-2 font-outfit">
-          <i class="fa-solid fa-tags text-purple-400"></i> Kelola Sebutan Gelar Tiap Generasi
+          <i class="fa-solid fa-tags text-purple-400"></i> Sebutan Gelar Tiap Generasi
         </h3>
         <button onclick="closeGenTitleModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
-      <p class="text-slate-400">Sesuaikan nama sebutan garis keturunan keluarga Anda (misal istilah trah Jawa/Sunda):</p>
-      <div id="genTitleInputsContainer" class="max-h-60 overflow-y-auto space-y-2 pr-1">
-        <!-- Render dinamis gen 1 - 8 -->
-      </div>
+      <div id="genTitleInputsContainer" class="max-h-60 overflow-y-auto space-y-2 pr-1"></div>
       <div class="pt-2 flex justify-end gap-2 border-t border-slate-800">
         <button onclick="closeGenTitleModal()" class="px-4 py-2 bg-slate-800 rounded-xl text-slate-300">Batal</button>
-        <button onclick="saveGenTitles()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded-xl text-white font-semibold">Simpan Gelar</button>
+        <button onclick="saveGenTitles()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded-xl text-white font-semibold">Simpan</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL: PILIH & EDIT / HAPUS ANGGOTA CEPAT -->
+  <!-- MODAL: PILIH ANGGOTA CEPAT -->
   <div id="quickSelectModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl p-5 space-y-4 text-xs">
       <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
@@ -535,10 +638,8 @@
         <button onclick="closeQuickSelectModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
       <div>
-        <label class="block text-slate-300 font-semibold mb-1">Daftar Anggota Keluarga</label>
-        <select id="quickSelectMember" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none">
-          <!-- Render dinamis -->
-        </select>
+        <label class="block text-slate-300 font-semibold mb-1">Daftar Anggota</label>
+        <select id="quickSelectMember" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none"></select>
       </div>
       <div class="pt-2 flex justify-end gap-2 border-t border-slate-800">
         <button onclick="closeQuickSelectModal()" class="px-4 py-2 bg-slate-800 rounded-xl text-slate-300">Batal</button>
@@ -547,33 +648,21 @@
     </div>
   </div>
 
-  <!-- INPUT FILE RAHASIA UNTUK IMPORT JSON -->
   <input type="file" id="jsonFileInput" accept=".json" class="hidden" onchange="handleFileImport(event)" />
 
-  <!-- JAVASCRIPT LOGIC LENGKAP -->
+  <!-- LOGIKA JAVASCRIPT LENGKAP -->
   <script>
-    // URL Google Apps Script Web App (Kosongkan atau isi default)
-    // Anggota keluarga juga bisa memasukkan URL ini lewat UI tanpa edit kode!
-    // >>> WAJIB ISI: tempel URL Web App Google Apps Script Anda di antara tanda kutip di bawah ini.
-    // Dengan begitu SEMUA perangkat (HP / laptop) otomatis memakai database yang sama.
-    const DEFAULT_GAS_URL = "";
+    const DEFAULT_GAS_URL = ""; 
 
-    // Alternatif: buka halaman dengan link ...?gas=URL_WEBAPP , URL akan tersimpan otomatis di perangkat itu.
-    (function captureGasFromLink() {
-      try {
-        const g = new URLSearchParams(location.search).get("gas");
-        if (g) {
-          localStorage.setItem("FAMILY_TREE_GAS_URL", g);
-          history.replaceState(null, "", location.pathname);
-        }
-      } catch (e) {}
-    })();
+    const PRESET_AVATARS = [
+      { id: "m_elder", label: "Sesepuh (L)", gender: "male", url: "https://api.dicebear.com/7.x/bottts/svg?seed=Ahmad&backgroundColor=1e293b" },
+      { id: "f_elder", label: "Sesepuh (P)", gender: "female", url: "https://api.dicebear.com/7.x/bottts/svg?seed=Siti&backgroundColor=1e293b" },
+      { id: "m_adult", label: "Dewasa (L)", gender: "male", url: "https://api.dicebear.com/7.x/bottts/svg?seed=Bambang&backgroundColor=1e293b" },
+      { id: "f_adult", label: "Dewasa (P)", gender: "female", url: "https://api.dicebear.com/7.x/bottts/svg?seed=Sri&backgroundColor=1e293b" },
+      { id: "m_child", label: "Anak (L)", gender: "male", url: "https://api.dicebear.com/7.x/bottts/svg?seed=Kenes&backgroundColor=1e293b" },
+      { id: "f_child", label: "Anak (P)", gender: "female", url: "https://api.dicebear.com/7.x/bottts/svg?seed=Aisyah&backgroundColor=1e293b" }
+    ];
 
-    // Status koneksi cloud: perubahan hanya dikirim ke cloud kalau data cloud sudah berhasil dimuat
-    // (mencegah HP dengan data lama/contoh menimpa data asli)
-    let cloudLoaded = false;
-
-    // Gelar bawaan per tingkatan generasi
     const defaultGenerationTitles = {
       1: "Leluhur / Moyang",
       2: "Eyang Buyut",
@@ -585,33 +674,13 @@
       8: "Piut / Canggah"
     };
 
-    // Data awal 6 Generasi (Contoh Bersih: Gen 1 hanya memiliki 1 anak utama ke Gen 2)
     const initialSampleFamily = [
-      // GENERASI 1 (Leluhur Tunggal)
-      { id: 1, name: "Kyai Ageng Danurejo", gender: "male", birthYear: 1895, deathYear: 1968, status: "deceased", pids: [2], bio: "Pendiri trah keluarga besar, pejuang dan tokoh sesepuh desa.", photo: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80" },
-      { id: 2, name: "Nyai Ageng Siti Aminah", gender: "female", birthYear: 1902, deathYear: 1974, status: "deceased", pids: [1], bio: "Istri setia Kyai Ageng Danurejo.", photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80" },
-
-      // GENERASI 2 (Hanya 1 anak utama dari Gen 1 agar bersih tanpa cabang hantu)
-      { id: 3, fid: 1, mid: 2, name: "R. Soedirman Danurejo", gender: "male", birthYear: 1928, deathYear: 2002, status: "deceased", pids: [4], bio: "Anak tunggal pendiri trah, tokoh pendidik nasional.", photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80" },
-      { id: 4, name: "Hj. Wardinah", gender: "female", birthYear: 1934, deathYear: 2010, status: "deceased", pids: [3], bio: "Istri R. Soedirman.", photo: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&q=80" },
-
-      // GENERASI 3 (Kakek & Nenek)
-      { id: 5, fid: 3, mid: 4, name: "Ir. Bambang Trihatmojo", gender: "male", birthYear: 1958, status: "alive", pids: [6], bio: "Insinyur sipil dan sesepuh generasi ketiga.", photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&q=80" },
-      { id: 6, name: "Dra. Sri Wahyuni", gender: "female", birthYear: 1962, status: "alive", pids: [5], bio: "Pensiunan guru SMA.", photo: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=256&q=80" },
-
-      // GENERASI 4 (Orang Tua)
-      { id: 7, fid: 5, mid: 6, name: "Arifin Hendrawan, S.T.", gender: "male", birthYear: 1985, status: "alive", pids: [8], bio: "Kepala keluarga generasi keempat.", photo: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=256&q=80" },
-      { id: 8, name: "Heni Nur Laila, S.Farm.", gender: "female", birthYear: 1989, status: "alive", pids: [7], bio: "Apoteker dan ibu rumah tangga.", photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=256&q=80" },
-
-      // GENERASI 5 (Anak)
-      { id: 9, fid: 7, mid: 8, name: "Muhammad Kenes Danurejo", gender: "male", birthYear: 2012, status: "alive", pids: [10], bio: "Generasi kelima penerus trah.", photo: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=256&q=80" },
-      { id: 10, name: "Aisyah Putri Permata", gender: "female", birthYear: 2014, status: "alive", pids: [9], bio: "Istri Kenes.", photo: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=256&q=80" },
-
-      // GENERASI 6 (Cucu)
-      { id: 11, fid: 9, mid: 10, name: "Baby Danendra Danurejo", gender: "male", birthYear: 2026, status: "alive", bio: "Cucu mungil generasi keenam keluarga besar Danurejo.", photo: "https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=256&q=80" }
+      { id: 1, name: "Kyai Ageng Danurejo", gender: "male", birthYear: 1895, deathYear: 1968, status: "deceased", pids: [2], bio: "Pendiri trah keluarga besar.", photo: "" },
+      { id: 2, name: "Nyai Ageng Siti Aminah", gender: "female", birthYear: 1902, deathYear: 1974, status: "deceased", pids: [1], bio: "Istri setia Kyai Ageng Danurejo.", photo: "" },
+      { id: 3, fid: 1, mid: 2, name: "R. Soedirman Danurejo", gender: "male", birthYear: 1928, deathYear: 2002, status: "deceased", pids: [4], bio: "Anak generasi kedua.", photo: "" },
+      { id: 4, name: "Hj. Wardinah", gender: "female", birthYear: 1934, deathYear: 2010, status: "deceased", pids: [3], bio: "Istri R. Soedirman.", photo: "" }
     ];
 
-    // Status State Aplikasi
     let familyData = [];
     let generationTitles = {};
     let treeTitle = "Silsilah Trah Keluarga Besar";
@@ -619,28 +688,19 @@
     let tree = null;
     let currentSelectedMemberId = null;
 
-    // Helper: Ambil URL Google Apps Script dari LocalStorage atau default
     function getGasUrl() {
-      return DEFAULT_GAS_URL || localStorage.getItem("FAMILY_TREE_GAS_URL") || "";
+      return localStorage.getItem("FAMILY_TREE_GAS_URL") || DEFAULT_GAS_URL;
     }
 
-    // Inisialisasi Aplikasi Saat Halaman Dibuka
     document.addEventListener("DOMContentLoaded", () => {
       initApp();
+      renderPresetAvatars();
     });
 
     async function initApp() {
       loadLocalConfig();
       renderAppHeader();
       await fetchDataFromCloud();
-      // Auto-segarkan saat tab dibuka kembali & tiap 60 detik (jika tidak sedang mengisi form)
-      const anyModalOpen = () => [...document.querySelectorAll('[id$="Modal"]')].some(el => !el.classList.contains("hidden"));
-      document.addEventListener("visibilitychange", () => {
-        if (!document.hidden && !anyModalOpen()) fetchDataFromCloud(false, true);
-      });
-      setInterval(() => {
-        if (!document.hidden && !anyModalOpen()) fetchDataFromCloud(false, true);
-      }, 60000);
     }
 
     function loadLocalConfig() {
@@ -655,14 +715,361 @@
     }
 
     function renderAppHeader() {
-      document.getElementById("treeTitle").innerHTML = `<i class="fa-solid fa-seedling text-emerald-400 text-lg mr-2"></i><span>${treeTitle}</span>`;
+      document.getElementById("treeTitle").textContent = treeTitle;
       document.getElementById("treeDesc").textContent = treeDesc;
     }
 
+    function getSafeAvatarUrl(name, gender, customPhoto) {
+      if (customPhoto && customPhoto.trim() !== "") {
+        // Konversi format Google Drive View URL jika ada
+        if (customPhoto.includes("drive.google.com/file/d/")) {
+          const match = customPhoto.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+          if (match && match[1]) {
+            return `https://lh3.googleusercontent.com/d/${match[1]}`;
+          }
+        }
+        return customPhoto;
+      }
+      const bg = gender === 'female' ? 'be185d' : '1d4ed8';
+      const cleanName = encodeURIComponent(name || 'Keluarga');
+      return `https://ui-avatars.com/api/?name=${cleanName}&background=${bg}&color=ffffff&bold=true&rounded=true&size=128`;
+    }
+
+    function renderPresetAvatars() {
+      const container = document.getElementById("presetAvatarContainer");
+      container.innerHTML = PRESET_AVATARS.map(p => `
+        <div onclick="applyPresetAvatar('${p.url}')" title="${p.label}" class="cursor-pointer group flex flex-col items-center">
+          <img src="${p.url}" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 group-hover:border-indigo-400 group-hover:scale-105 transition-all" />
+          <span class="text-[9px] text-slate-400 mt-0.5 truncate w-full text-center group-hover:text-white">${p.label}</span>
+        </div>
+      `).join("");
+    }
+
+    function applyPresetAvatar(url) {
+      document.getElementById("formPhotoData").value = url;
+      document.getElementById("formPhotoPreview").src = url;
+      document.getElementById("formPhotoFile").value = "";
+    }
+
+    function selectInitialAvatar() {
+      const name = document.getElementById("formName").value.trim();
+      const gender = document.getElementById("formGender").value;
+      const initialUrl = getSafeAvatarUrl(name, gender, "");
+      applyPresetAvatar(initialUrl);
+    }
+
+    function updateInitialPreview() {
+      const currentVal = document.getElementById("formPhotoData").value;
+      if (!currentVal || currentVal.includes("ui-avatars.com")) {
+        selectInitialAvatar();
+      }
+    }
+
+    function onGenderChange() {
+      updateInitialPreview();
+    }
+
     // ==========================================================
-    // SINKRONISASI ONLINE (GOOGLE SHEETS VIA APPS SCRIPT)
+    // FUNGSI UPLOAD FOTO OTOMATIS KE GOOGLE DRIVE
     // ==========================================================
-    async function fetchDataFromCloud(forceManualRefresh = false, silent = false) {
+    async function uploadPhotoToGoogleDrive(file, memberName = "anggota") {
+      const gasUrl = getGasUrl();
+      if (!gasUrl) {
+        throw new Error("Koneksi Google Apps Script belum dipasang. Silakan pasang di menu Koneksi Google Sheets.");
+      }
+
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+          try {
+            const dataUrl = e.target.result;
+            // Pisahkan Base64 murni dari header data URI
+            const base64Index = dataUrl.indexOf(";base64,");
+            if (base64Index === -1) throw new Error("Format berkas foto tidak valid");
+            const pureBase64 = dataUrl.substring(base64Index + 8);
+            const mimeType = file.type || "image/jpeg";
+            const cleanFileName = `foto_${memberName.replace(/[^a-zA-Z0-9]/g, "_")}_${Date.now()}.jpg`;
+
+            const payload = {
+              action: "upload_photo",
+              fileName: cleanFileName,
+              mimeType: mimeType,
+              base64Data: pureBase64
+            };
+
+            const response = await fetch(gasUrl, {
+              method: "POST",
+              headers: { "Content-Type": "text/plain;charset=utf-8" },
+              body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+            if (result && result.status === "success" && result.photoUrl) {
+              resolve(result.photoUrl);
+            } else {
+              throw new Error(result.message || "Gagal mengunggah foto ke Google Drive");
+            }
+          } catch (err) {
+            reject(err);
+          }
+        };
+        reader.onerror = () => reject(new Error("Gagal membaca berkas foto"));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // ==========================================================
+    // FITUR GALERI FOTO ANGGOTA KELUARGA
+    // ==========================================================
+    function openGalleryModal() {
+      document.getElementById("gallerySearchInput").value = "";
+      document.getElementById("galleryGenFilter").value = "all";
+      renderGalleryGrid();
+      document.getElementById("galleryModal").classList.remove("hidden");
+    }
+
+    function closeGalleryModal() {
+      document.getElementById("galleryModal").classList.add("hidden");
+    }
+
+    function renderGalleryGrid() {
+      const query = document.getElementById("gallerySearchInput").value.toLowerCase().trim();
+      const filter = document.getElementById("galleryGenFilter").value;
+      const container = document.getElementById("galleryGridContainer");
+      const processed = computeAllGenerations(familyData);
+
+      let filtered = processed.filter(m => {
+        const matchName = (m.name && m.name.toLowerCase().includes(query)) ||
+                          (m.genTitle && m.genTitle.toLowerCase().includes(query));
+        if (!matchName) return false;
+
+        const hasRealPhoto = m.photo && m.photo.trim() !== "" && !m.photo.includes("ui-avatars.com") && !m.photo.includes("dicebear.com");
+
+        if (filter === "has_photo") return hasRealPhoto;
+        if (filter === "gen1") return m.genNumber === 1;
+        if (filter === "gen2") return m.genNumber === 2;
+        if (filter === "gen3") return m.genNumber === 3;
+        if (filter === "gen4") return m.genNumber === 4;
+        if (filter === "gen5") return m.genNumber === 5;
+        if (filter === "gen6") return m.genNumber >= 6;
+        return true;
+      });
+
+      const totalPhotos = processed.filter(m => m.photo && m.photo.trim() !== "" && !m.photo.includes("ui-avatars.com")).length;
+      document.getElementById("gallerySubtitle").textContent = `Menampilkan ${filtered.length} dari ${processed.length} anggota keluarga (${totalPhotos} foto tersimpan)`;
+      document.getElementById("galleryStatsText").textContent = `Total ${processed.length} Anggota | ${totalPhotos} Foto Tersimpan di Google Drive`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full py-12 text-center text-slate-400">
+            <i class="fa-solid fa-camera text-4xl text-slate-600 mb-3 block"></i>
+            Tidak ada foto anggota keluarga yang cocok dengan kriteria pencarian.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(m => {
+        const photoUrl = getSafeAvatarUrl(m.name, m.gender, m.photo);
+        const hasCustomPhoto = m.photo && m.photo.trim() !== "" && !m.photo.includes("ui-avatars.com");
+        const isAlive = m.status !== "deceased";
+        let lifeSpan = m.birthYear ? `Thn ${m.birthYear}` : "?";
+        lifeSpan += isAlive ? " (Hidup)" : ` - ${m.deathYear || 'Wafat'}`;
+
+        return `
+          <div class="bg-slate-800/80 rounded-2xl border border-slate-700/80 overflow-hidden shadow-lg hover:border-indigo-500/80 transition-all flex flex-col justify-between group">
+            
+            <!-- Area Gambar Foto -->
+            <div class="relative w-full aspect-square bg-slate-900 cursor-pointer overflow-hidden" onclick="openLightbox(${m.id})">
+              <img src="${photoUrl}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              
+              <!-- Badge Generasi -->
+              <span class="absolute top-2 left-2 bg-indigo-950/90 text-indigo-300 border border-indigo-700/80 text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm">
+                Gen ${m.genNumber}
+              </span>
+
+              <!-- Badge Status Foto -->
+              ${hasCustomPhoto 
+                ? '<span class="absolute top-2 right-2 bg-emerald-950/90 text-emerald-300 border border-emerald-700 text-[9px] font-bold px-1.5 py-0.5 rounded-full"><i class="fa-brands fa-google-drive mr-1"></i>Drive</span>'
+                : '<span class="absolute top-2 right-2 bg-slate-900/90 text-slate-400 border border-slate-700 text-[9px] px-1.5 py-0.5 rounded-full">Avatar</span>'}
+
+              <!-- Overlay Hover Zoom -->
+              <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold transition-opacity">
+                <i class="fa-solid fa-expand mr-1.5"></i> Perbesar
+              </div>
+            </div>
+
+            <!-- Info Anggota -->
+            <div class="p-3 flex-1 flex flex-col justify-between space-y-2">
+              <div>
+                <h4 class="font-bold text-xs text-white truncate font-outfit" title="${m.name}">${m.name}</h4>
+                <p class="text-[10px] text-indigo-300 truncate font-medium">${m.genTitle}</p>
+                <p class="text-[9px] text-slate-400 mt-0.5"><i class="fa-regular fa-calendar mr-1"></i>${lifeSpan}</p>
+              </div>
+
+              <!-- Tombol Aksi Cepat -->
+              <div class="pt-2 border-t border-slate-700/60 flex items-center gap-1.5">
+                <button onclick="openQuickPhotoModal(${m.id})" title="Pasang / Ubah Foto Anggota Ini" class="flex-1 py-1.5 bg-indigo-600/80 hover:bg-indigo-600 text-white rounded-lg text-[10px] font-semibold transition-all flex items-center justify-center gap-1">
+                  <i class="fa-solid fa-camera"></i> Foto
+                </button>
+                <button onclick="jumpToTreeMember(${m.id})" title="Tampilkan Posisi di Bagan Pohon" class="px-2 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg text-[10px] font-semibold transition-all">
+                  <i class="fa-solid fa-sitemap"></i>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        `;
+      }).join("");
+    }
+
+    function jumpToTreeMember(memberId) {
+      closeGalleryModal();
+      if (tree) tree.center(memberId);
+      openDetailDrawer(memberId);
+    }
+
+    // LIGHTBOX FULLSCREEN
+    function openLightbox(memberId) {
+      const processed = computeAllGenerations(familyData);
+      const member = processed.find(m => m.id === memberId);
+      if (!member) return;
+
+      const photoUrl = getSafeAvatarUrl(member.name, member.gender, member.photo);
+      document.getElementById("lightboxImg").src = photoUrl;
+      document.getElementById("lightboxTitle").textContent = member.name;
+      document.getElementById("lightboxSubtitle").textContent = `Generasi ${member.genNumber} • ${member.genTitle}`;
+      document.getElementById("lightboxBio").textContent = member.bio || "Tidak ada catatan riwayat.";
+
+      document.getElementById("lightboxModal").classList.remove("hidden");
+    }
+
+    function openLightboxFromDrawer() {
+      if (currentSelectedMemberId) {
+        openLightbox(currentSelectedMemberId);
+      }
+    }
+
+    function closeLightbox() {
+      document.getElementById("lightboxModal").classList.add("hidden");
+    }
+
+    // MODAL CEPAT PASANG FOTO DARI GALERI KE GOOGLE DRIVE
+    function openQuickPhotoModal(memberId) {
+      const member = familyData.find(m => m.id === memberId);
+      if (!member) return;
+
+      document.getElementById("quickPhotoMemberId").value = member.id;
+      document.getElementById("quickPhotoMemberName").textContent = member.name;
+      document.getElementById("quickPhotoData").value = member.photo || "";
+      document.getElementById("quickPhotoFileInput").value = "";
+      document.getElementById("quickPhotoUrlInput").value = (member.photo && member.photo.startsWith("http") && !member.photo.includes("ui-avatars.com")) ? member.photo : "";
+      document.getElementById("quickPhotoPreview").src = getSafeAvatarUrl(member.name, member.gender, member.photo);
+      document.getElementById("quickPhotoLoadingOverlay").classList.add("hidden");
+      document.getElementById("quickPhotoStatusHint").textContent = "Foto otomatis disimpan di Google Drive Anda.";
+
+      document.getElementById("quickPhotoModal").classList.remove("hidden");
+    }
+
+    function closeQuickPhotoModal() {
+      document.getElementById("quickPhotoModal").classList.add("hidden");
+    }
+
+    async function handleQuickPhotoUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const memberName = document.getElementById("quickPhotoMemberName").textContent || "anggota";
+      const loadingOverlay = document.getElementById("quickPhotoLoadingOverlay");
+      const statusHint = document.getElementById("quickPhotoStatusHint");
+      const btnSubmit = document.getElementById("btnSubmitQuickPhoto");
+
+      loadingOverlay.classList.remove("hidden");
+      statusHint.innerHTML = `<span class="text-amber-400"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Mengunggah ke Google Drive...</span>`;
+      btnSubmit.disabled = true;
+
+      try {
+        const driveUrl = await uploadPhotoToGoogleDrive(file, memberName);
+        document.getElementById("quickPhotoData").value = driveUrl;
+        document.getElementById("quickPhotoPreview").src = driveUrl;
+        document.getElementById("quickPhotoUrlInput").value = driveUrl;
+        statusHint.innerHTML = `<span class="text-emerald-400 font-semibold"><i class="fa-solid fa-circle-check mr-1"></i> Berhasil diunggah ke Google Drive!</span>`;
+      } catch (err) {
+        console.error("Gagal auto upload:", err);
+        statusHint.innerHTML = `<span class="text-rose-400 font-semibold"><i class="fa-solid fa-circle-xmark mr-1"></i> ${err.message || 'Gagal unggah foto'}</span>`;
+        alert("Peringatan: " + err.message);
+      } finally {
+        loadingOverlay.classList.add("hidden");
+        btnSubmit.disabled = false;
+      }
+    }
+
+    function handleQuickPhotoUrlInput(url) {
+      if (url && url.trim() !== "") {
+        document.getElementById("quickPhotoData").value = url.trim();
+        document.getElementById("quickPhotoPreview").src = getSafeAvatarUrl("", "male", url.trim());
+      }
+    }
+
+    function resetToInitialAvatarInQuickPhoto() {
+      const memberId = parseInt(document.getElementById("quickPhotoMemberId").value);
+      const member = familyData.find(m => m.id === memberId);
+      if (member) {
+        const initialUrl = getSafeAvatarUrl(member.name, member.gender, "");
+        document.getElementById("quickPhotoData").value = initialUrl;
+        document.getElementById("quickPhotoPreview").src = initialUrl;
+        document.getElementById("quickPhotoUrlInput").value = "";
+        document.getElementById("quickPhotoStatusHint").textContent = "Menggunakan inisial nama otomatis.";
+      }
+    }
+
+    async function saveQuickPhoto() {
+      const memberId = parseInt(document.getElementById("quickPhotoMemberId").value);
+      const newPhoto = document.getElementById("quickPhotoData").value;
+
+      const idx = familyData.findIndex(m => m.id === memberId);
+      if (idx !== -1) {
+        familyData[idx].photo = newPhoto;
+        closeQuickPhotoModal();
+        renderGalleryGrid();
+        initFamilyTree();
+        await saveToCloud();
+      }
+    }
+
+    // UPLOAD FOTO DARI FORM UTAMA DENGAN AUTO GOOGLE DRIVE
+    async function handleFormPhotoUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const memberName = document.getElementById("formName").value.trim() || "anggota";
+      const loading = document.getElementById("formPhotoLoading");
+      const statusText = document.getElementById("formPhotoUploadStatus");
+      const btnSubmit = document.getElementById("btnSubmitMainForm");
+
+      loading.classList.remove("hidden");
+      statusText.innerHTML = `<span class="text-amber-400"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Upload ke Google Drive...</span>`;
+      btnSubmit.disabled = true;
+
+      try {
+        const driveUrl = await uploadPhotoToGoogleDrive(file, memberName);
+        document.getElementById("formPhotoData").value = driveUrl;
+        document.getElementById("formPhotoPreview").src = driveUrl;
+        statusText.innerHTML = `<span class="text-emerald-400 font-semibold"><i class="fa-solid fa-check mr-1"></i> Tersimpan di Drive</span>`;
+      } catch (err) {
+        console.error("Gagal auto upload:", err);
+        statusText.innerHTML = `<span class="text-rose-400 font-semibold">Gagal upload: ${err.message}</span>`;
+        alert("Gagal mengunggah foto ke Google Drive: " + err.message);
+      } finally {
+        loading.classList.add("hidden");
+        btnSubmit.disabled = false;
+      }
+    }
+
+    // ==========================================================
+    // SINKRONISASI CLOUD DENGAN GOOGLE SHEETS
+    // ==========================================================
+    async function fetchDataFromCloud(forceManualRefresh = false) {
       const gasUrl = getGasUrl();
       const syncBadge = document.getElementById("syncBadge");
       const syncDot = document.getElementById("syncDot");
@@ -672,61 +1079,46 @@
       if (refreshIcon) refreshIcon.classList.add("fa-spin");
 
       if (!gasUrl) {
-        // Jika belum ada URL Google Sheets, pakai LocalStorage / Sample
         syncDot.className = "w-2 h-2 rounded-full bg-amber-400";
-        syncText.textContent = "Mode Offline (Lokal)";
+        syncText.textContent = "Mode Offline";
         syncBadge.title = "Belum terhubung ke Google Sheets. Klik untuk pasang URL.";
         loadFromLocalStorageOrSample();
         if (refreshIcon) refreshIcon.classList.remove("fa-spin");
         return;
       }
 
-      if (!silent) {
-        syncDot.className = "w-2 h-2 rounded-full bg-blue-400 animate-ping";
-        syncText.textContent = "Mengambil data...";
-      }
+      syncDot.className = "w-2 h-2 rounded-full bg-blue-400 animate-ping";
+      syncText.textContent = "Mengambil data...";
 
       try {
-        const sep = gasUrl.includes("?") ? "&" : "?";
-        const response = await fetch(gasUrl + sep + "t=" + Date.now(), { method: "GET", cache: "no-store" });
+        const response = await fetch(gasUrl, { method: "GET" });
         if (!response.ok) throw new Error("Gagal mengambil data dari Google Sheets");
         const cloudData = await response.json();
 
         if (cloudData && Array.isArray(cloudData.members) && cloudData.members.length > 0) {
-          cloudLoaded = true;
-          if (silent && JSON.stringify(cloudData.members) === JSON.stringify(familyData) &&
-              (cloudData.treeTitle || treeTitle) === treeTitle && (cloudData.treeDesc || treeDesc) === treeDesc) {
-            syncDot.className = "w-2 h-2 rounded-full bg-emerald-400";
-            syncText.textContent = "Tersambung (Google Sheets)";
-            return; // tidak ada perubahan, jangan render ulang (zoom tidak reset)
-          }
           familyData = cloudData.members;
           if (cloudData.treeTitle) treeTitle = cloudData.treeTitle;
           if (cloudData.treeDesc) treeDesc = cloudData.treeDesc;
           if (cloudData.generationTitles) generationTitles = cloudData.generationTitles;
 
-          // Simpan cadangan di lokal
           saveToLocalStorage();
           renderAppHeader();
           initFamilyTree();
 
           syncDot.className = "w-2 h-2 rounded-full bg-emerald-400";
-          syncText.textContent = "Tersambung (Google Sheets)";
-          syncBadge.title = "Data sinkron dengan Google Sheets Anda.";
+          syncText.textContent = "Tersambung (Cloud)";
+          syncBadge.title = "Data sinkron dengan Google Sheets & Drive Anda.";
         } else {
-          // Sheet benar-benar kosong (respons valid tapi tanpa anggota): isi dengan data awal
-          cloudLoaded = true;
           syncDot.className = "w-2 h-2 rounded-full bg-emerald-400";
-          syncText.textContent = "Sheet Baru Diinisialisasi";
+          syncText.textContent = "Sheet Terhubung";
           loadFromLocalStorageOrSample();
           await saveToCloud();
         }
       } catch (err) {
-        console.warn("Koneksi cloud gagal:", err);
+        console.warn("Koneksi gagal, beralih ke cache lokal:", err);
         syncDot.className = "w-2 h-2 rounded-full bg-rose-400";
-        syncText.textContent = "Koneksi Gagal (Lokal)";
-        syncBadge.title = "Gagal menghubungi Google Sheets. Menampilkan data tersimpan di perangkat.";
-        if (!silent) loadFromLocalStorageOrSample();
+        syncText.textContent = "Koneksi Gagal";
+        loadFromLocalStorageOrSample();
       } finally {
         if (refreshIcon) refreshIcon.classList.remove("fa-spin");
       }
@@ -737,20 +1129,11 @@
       const syncDot = document.getElementById("syncDot");
       const syncText = document.getElementById("syncText");
 
-      // Selalu simpan ke LocalStorage sebagai backup instan
       saveToLocalStorage();
-
       if (!gasUrl) return;
 
-      if (!cloudLoaded) {
-        syncDot.className = "w-2 h-2 rounded-full bg-rose-400";
-        syncText.textContent = "Belum Tersambung";
-        alert("Perubahan HANYA tersimpan di perangkat ini karena data cloud belum berhasil dimuat. Cek internet lalu tekan tombol segarkan, supaya data asli di Google Sheets tidak tertimpa.");
-        return;
-      }
-
       syncDot.className = "w-2 h-2 rounded-full bg-amber-400 animate-pulse";
-      syncText.textContent = "Menyimpan ke Cloud...";
+      syncText.textContent = "Menyimpan...";
 
       try {
         const payload = {
@@ -760,9 +1143,9 @@
           members: familyData
         };
 
-        // Kirim via POST (text/plain menghindari preflight CORS di Google Apps Script)
         await fetch(gasUrl, {
           method: "POST",
+          mode: "no-cors",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify(payload)
         });
@@ -770,20 +1153,16 @@
         syncDot.className = "w-2 h-2 rounded-full bg-emerald-400";
         syncText.textContent = "Tersimpan Permanen";
       } catch (err) {
-        console.error("Gagal simpan ke Google Sheets:", err);
+        console.error("Gagal simpan ke Cloud:", err);
         syncDot.className = "w-2 h-2 rounded-full bg-rose-400";
-        syncText.textContent = "Gagal Simpan ke Cloud";
+        syncText.textContent = "Gagal Simpan";
       }
     }
 
     function loadFromLocalStorageOrSample() {
       const storedData = localStorage.getItem("FAMILY_TREE_DATA_MEMBERS");
       if (storedData) {
-        try {
-          familyData = JSON.parse(storedData);
-        } catch (e) {
-          familyData = [...initialSampleFamily];
-        }
+        try { familyData = JSON.parse(storedData); } catch (e) { familyData = [...initialSampleFamily]; }
       } else {
         familyData = [...initialSampleFamily];
       }
@@ -797,9 +1176,7 @@
       localStorage.setItem("FAMILY_TREE_GEN_TITLES", JSON.stringify(generationTitles));
     }
 
-    // ==========================================================
-    // PERHITUNGAN GENERASI OTOMATIS & BERANTAI
-    // ==========================================================
+    // HITUNG GENERASI OTOMATIS & BERANTAI
     function calculateMemberDepth(memberId, memberMap, visited = new Set()) {
       if (!memberId || visited.has(memberId)) return 1;
       visited.add(memberId);
@@ -817,11 +1194,8 @@
       }
 
       const maxParentDepth = Math.max(fatherDepth, motherDepth);
-      if (maxParentDepth > 0) {
-        return maxParentDepth + 1;
-      }
+      if (maxParentDepth > 0) return maxParentDepth + 1;
 
-      // Jika anggota adalah pasangan dari seseorang yang memiliki orang tua
       if (member.pids && member.pids.length > 0) {
         for (const spouseId of member.pids) {
           if (!visited.has(spouseId)) {
@@ -832,7 +1206,6 @@
           }
         }
       }
-
       return 1;
     }
 
@@ -851,130 +1224,82 @@
       });
     }
 
-    // ==========================================================
-    // INISIALISASI BALKAN FAMILYTREE.JS
-    // ==========================================================
+    // INISIALISASI POHON DENGAN FORMAT SVG MURNI
     function initFamilyTree() {
       const processedData = computeAllGenerations(familyData);
 
-      // Kustomisasi Template Kartu
-      FamilyTree.templates.customFamilyTemplate = Object.assign({}, FamilyTree.templates.tommy);
-      FamilyTree.templates.customFamilyTemplate.size = [250, 130];
-      FamilyTree.templates.customFamilyTemplate.node = 
-        '<rect x="0" y="0" height="130" width="250" fill="#1e293b" rx="16" ry="16" stroke="#334155" stroke-width="2" class="bft-node shadow-xl"></rect>';
+      FamilyTree.templates.customCard = Object.assign({}, FamilyTree.templates.base);
+      FamilyTree.templates.customCard.size = [250, 115];
       
-      FamilyTree.templates.customFamilyTemplate.defs = '';
+      FamilyTree.templates.customCard.node = 
+        '<rect x="0" y="0" height="115" width="250" fill="#1e293b" rx="14" ry="14" stroke="#475569" stroke-width="2" class="bft-node"></rect>';
+      
+      FamilyTree.templates.customCard.img_0 = 
+        '<clipPath id="{randId}"><rect x="12" y="14" width="56" height="56" rx="12" ry="12"></rect></clipPath>' +
+        '<image preserveAspectRatio="xMidYMid slice" clip-path="url(#{randId})" xlink:href="{val}" x="12" y="14" width="56" height="56"></image>';
 
-      // Tampilan HTML Kartu
-      FamilyTree.templates.customFamilyTemplate.html = `
-        <div class="w-full h-full p-3.5 flex flex-col justify-between text-left text-white select-none">
-          <div class="flex items-center gap-3">
-            <div class="relative shrink-0">
-              <img src="{val:photo}" class="w-12 h-12 rounded-xl object-cover border-2 {val:avatarBorderColor}" />
-              <div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] text-white {val:genderBg}">
-                <i class="fa-solid {val:genderIcon}"></i>
-              </div>
-            </div>
-            <div class="min-w-0 flex-1">
-              <div class="flex items-center gap-1.5">
-                <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full {val:badgeGenColor}">Gen {val:genNumber}</span>
-                <span class="text-[9px] text-slate-400 truncate">{val:statusText}</span>
-              </div>
-              <h4 class="text-xs font-bold font-outfit text-white truncate mt-0.5" title="{val:name}">{val:name}</h4>
-              <p class="text-[10px] text-indigo-300 font-medium truncate">{val:genTitle}</p>
-            </div>
-          </div>
-          <div class="pt-2 border-t border-slate-700/60 flex items-center justify-between text-[10px] text-slate-400">
-            <span><i class="fa-regular fa-calendar mr-1"></i>{val:lifeSpan}</span>
-            <span class="text-indigo-400 font-semibold hover:underline">Detail &rarr;</span>
-          </div>
-        </div>
-      `;
+      FamilyTree.templates.customCard.field_0 = 
+        '<text style="font-size: 10px; font-weight: 700; fill: #38bdf8; font-family: Inter, sans-serif;" x="78" y="27" text-anchor="start">{val}</text>';
 
-      // Transformasi Data ke Format Kartu
+      FamilyTree.templates.customCard.field_1 = 
+        '<text style="font-size: 13px; font-weight: 700; fill: #ffffff; font-family: Outfit, sans-serif;" x="78" y="47" text-anchor="start">{val}</text>';
+
+      FamilyTree.templates.customCard.field_2 = 
+        '<text style="font-size: 11px; fill: #a5b4fc; font-family: Inter, sans-serif;" x="78" y="65" text-anchor="start">{val}</text>';
+
+      FamilyTree.templates.customCard.field_3 = 
+        '<line x1="12" y1="80" x2="238" y2="80" stroke="#334155" stroke-width="1"></line>' +
+        '<text style="font-size: 10px; fill: #94a3b8; font-family: Inter, sans-serif;" x="14" y="98" text-anchor="start">{val}</text>' +
+        '<text style="font-size: 10px; font-weight: 600; fill: #818cf8; font-family: Inter, sans-serif;" x="236" y="98" text-anchor="end">Lihat Profil ›</text>';
+
       const treeElements = processedData.map(m => {
-        const isMale = m.gender === "male";
         const isAlive = m.status !== "deceased";
-        let lifeSpan = m.birthYear ? `${m.birthYear}` : "?";
-        if (!isAlive) {
-          lifeSpan += ` - ${m.deathYear || 'Wafat'}`;
-        } else {
-          lifeSpan += " (Hidup)";
-        }
+        let lifeSpan = m.birthYear ? `Thn ${m.birthYear}` : "?";
+        lifeSpan += isAlive ? " (Hidup)" : ` - ${m.deathYear || 'Wafat'}`;
 
-        // Tentukan warna border & badge sesuai generasi
-        const genColorPalette = [
-          "border-amber-400 bg-amber-950/80 text-amber-300",
-          "border-indigo-400 bg-indigo-950/80 text-indigo-300",
-          "border-sky-400 bg-sky-950/80 text-sky-300",
-          "border-emerald-400 bg-emerald-950/80 text-emerald-300",
-          "border-orange-400 bg-orange-950/80 text-orange-300",
-          "border-teal-400 bg-teal-950/80 text-teal-300",
-          "border-purple-400 bg-purple-950/80 text-purple-300"
-        ];
-        const colorIdx = Math.min((m.genNumber || 1) - 1, genColorPalette.length - 1);
-        const chosenPalette = genColorPalette[colorIdx].split(" ");
+        const photoUrl = getSafeAvatarUrl(m.name, m.gender, m.photo);
+        const statusLabel = isAlive ? "● Hidup" : "✝ Almarhum";
 
         return {
           id: m.id,
           mid: m.mid,
           fid: m.fid,
           pids: m.pids,
-          name: m.name,
-          genNumber: m.genNumber,
-          genTitle: m.genTitle,
-          statusText: isAlive ? "Hidup" : "Almarhum",
-          lifeSpan: lifeSpan,
-          photo: m.photo || (isMale ? "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=256&q=80" : "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80"),
-          avatarBorderColor: chosenPalette[0],
-          badgeGenColor: `${chosenPalette[1]} ${chosenPalette[2]} border border-current`,
-          genderIcon: isMale ? "fa-mars" : "fa-venus",
-          genderBg: isMale ? "bg-blue-600" : "bg-pink-600"
+          img_0: photoUrl,
+          field_0: `GEN ${m.genNumber}  |  ${statusLabel}`,
+          field_1: m.name,
+          field_2: m.genTitle,
+          field_3: lifeSpan,
+          rawMember: m
         };
       });
 
-      // Hancurkan instance lama jika ada
       const treeContainer = document.getElementById("tree");
       treeContainer.innerHTML = "";
 
       tree = new FamilyTree(treeContainer, {
-        template: "customFamilyTemplate",
+        template: "customCard",
         enableSearch: false,
         mouseScrool: FamilyTree.action.zoom,
         nodeBinding: {
-          html: "html"
+          img_0: "img_0",
+          field_0: "field_0",
+          field_1: "field_1",
+          field_2: "field_2",
+          field_3: "field_3"
         },
         nodes: treeElements
       });
 
-      // Event saat kartu diklik
       tree.on('click', function (sender, args) {
         if (args && args.node) {
           openDetailDrawer(args.node.id);
           return false;
         }
       });
-
-      // Terapkan degradasi warna garis silsilah secara visual
-      setTimeout(applyGraduationLinkColors, 400);
     }
 
-    // Mengubah warna garis penghubung sesuai tingkatan generasi
-    function applyGraduationLinkColors() {
-      const linkElements = document.querySelectorAll('#tree svg path[data-bft-link]');
-      const processed = computeAllGenerations(familyData);
-      const memberMap = new Map();
-      processed.forEach(m => memberMap.set(m.id, m));
-
-      linkElements.forEach(path => {
-        path.style.stroke = "url(#gradGen3)";
-        path.style.strokeWidth = "4px";
-      });
-    }
-
-    // ==========================================================
     // PENCARIAN ANGGOTA
-    // ==========================================================
     function handleSearch(query) {
       const resultsContainer = document.getElementById("searchResults");
       const clearBtn = document.getElementById("clearSearchBtn");
@@ -990,13 +1315,11 @@
       const processed = computeAllGenerations(familyData);
       const matches = processed.filter(m => 
         (m.name && m.name.toLowerCase().includes(q)) ||
-        (m.genTitle && m.genTitle.toLowerCase().includes(q)) ||
-        (m.bio && m.bio.toLowerCase().includes(q)) ||
-        (m.phone && m.phone.replace(/\D/g, "").includes(q.replace(/\D/g, "") || "\u0000"))
+        (m.genTitle && m.genTitle.toLowerCase().includes(q))
       );
 
       if (matches.length === 0) {
-        resultsContainer.innerHTML = `<div class="p-3 text-center text-slate-400">Tidak ada anggota keluarga ditemukan dengan kata kunci "${query}".</div>`;
+        resultsContainer.innerHTML = `<div class="p-3 text-center text-slate-400">Tidak ada anggota keluarga ditemukan.</div>`;
         resultsContainer.classList.remove("hidden");
         return;
       }
@@ -1004,7 +1327,7 @@
       resultsContainer.innerHTML = matches.map(m => `
         <div onclick="selectSearchResult(${m.id})" class="p-2.5 hover:bg-slate-800 cursor-pointer flex items-center justify-between transition-colors">
           <div class="flex items-center gap-2.5">
-            <img src="${m.photo || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&q=80'}" class="w-8 h-8 rounded-lg object-cover" />
+            <img src="${getSafeAvatarUrl(m.name, m.gender, m.photo)}" class="w-8 h-8 rounded-lg object-cover bg-slate-700" />
             <div>
               <div class="font-bold text-white">${m.name}</div>
               <div class="text-[10px] text-slate-400">Gen ${m.genNumber} &bull; ${m.genTitle}</div>
@@ -1018,23 +1341,18 @@
     }
 
     function clearSearch() {
-      const searchInput = document.getElementById("searchInput");
-      searchInput.value = "";
+      document.getElementById("searchInput").value = "";
       document.getElementById("searchResults").classList.add("hidden");
       document.getElementById("clearSearchBtn").classList.add("hidden");
     }
 
     function selectSearchResult(memberId) {
       clearSearch();
-      if (tree) {
-        tree.center(memberId);
-      }
+      if (tree) tree.center(memberId);
       openDetailDrawer(memberId);
     }
 
-    // ==========================================================
     // DETAIL DRAWER
-    // ==========================================================
     function openDetailDrawer(memberId) {
       currentSelectedMemberId = memberId;
       const processed = computeAllGenerations(familyData);
@@ -1052,7 +1370,7 @@
       lifeSpan += isAlive ? " - Sekarang (Hidup)" : ` - ${member.deathYear || 'Wafat'} (Almarhum)`;
       document.getElementById("drawerLifeSpan").textContent = lifeSpan;
 
-      document.getElementById("drawerAvatar").src = member.photo || (member.gender === "male" ? "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=256&q=80" : "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80");
+      document.getElementById("drawerAvatar").src = getSafeAvatarUrl(member.name, member.gender, member.photo);
 
       const genderIcon = document.getElementById("drawerGenderIcon");
       if (member.gender === "male") {
@@ -1063,7 +1381,6 @@
         genderIcon.innerHTML = `<i class="fa-solid fa-venus"></i>`;
       }
 
-      // Relasi Ayah, Ibu, Pasangan, Anak
       const father = member.fid ? processed.find(m => m.id === member.fid) : null;
       const mother = member.mid ? processed.find(m => m.id === member.mid) : null;
       const spouse = (member.pids && member.pids.length > 0) ? processed.find(m => m.id === member.pids[0]) : null;
@@ -1084,33 +1401,6 @@
       const cEl = document.getElementById("drawerChildren");
       cEl.textContent = children.length > 0 ? children.map(c => c.name).join(", ") : "Belum ada anak tercatat";
 
-      // Telepon
-      const phoneWrap = document.getElementById("drawerPhoneWrap");
-      phoneWrap.innerHTML = "";
-      const rawPhone = (member.phone || "").trim();
-      if (rawPhone) {
-        const digits = rawPhone.replace(/[^\d+]/g, "");
-        let wa = digits.replace(/\D/g, "");
-        if (wa.startsWith("0")) wa = "62" + wa.slice(1);
-        const num = document.createElement("span");
-        num.className = "font-medium text-white mr-3";
-        num.textContent = rawPhone;
-        const call = document.createElement("a");
-        call.href = "tel:" + digits;
-        call.className = "inline-block px-2.5 py-1 rounded-lg bg-slate-700 hover:bg-slate-600 text-white mr-1.5";
-        call.innerHTML = '<i class="fa-solid fa-phone mr-1"></i>Telepon';
-        const waLink = document.createElement("a");
-        waLink.href = "https://wa.me/" + wa;
-        waLink.target = "_blank";
-        waLink.rel = "noopener";
-        waLink.className = "inline-block px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white";
-        waLink.innerHTML = '<i class="fa-brands fa-whatsapp mr-1"></i>WhatsApp';
-        phoneWrap.append(num, call, waLink);
-      } else {
-        phoneWrap.textContent = "Belum ada nomor telepon.";
-      }
-
-      // Tombol Aksi di Drawer
       document.getElementById("drawerBtnEdit").onclick = () => {
         closeDetailDrawer();
         openEditMemberModal(member.id);
@@ -1132,15 +1422,14 @@
       document.getElementById("detailDrawer").classList.add("translate-x-full");
     }
 
-    // ==========================================================
-    // FORM MANAJEMEN ANGGOTA (TAMBAH / EDIT / HAPUS)
-    // ==========================================================
+    // FORM MODAL
     function openAddMemberModal() {
       resetMemberForm();
       document.getElementById("modalMemberTitle").innerHTML = `<i class="fa-solid fa-user-plus text-indigo-400"></i> Tambah Anggota Silsilah`;
       document.getElementById("formDeleteBtn").classList.add("hidden");
       populateParentAndSpouseOptions();
       recalculateFormGenerationalTitle();
+      selectInitialAvatar();
       document.getElementById("memberModal").classList.remove("hidden");
     }
 
@@ -1150,14 +1439,10 @@
       if (parent) {
         if (parent.gender === "male") {
           document.getElementById("formFather").value = parent.id;
-          if (parent.pids && parent.pids.length > 0) {
-            document.getElementById("formMother").value = parent.pids[0];
-          }
+          if (parent.pids && parent.pids.length > 0) document.getElementById("formMother").value = parent.pids[0];
         } else {
           document.getElementById("formMother").value = parent.id;
-          if (parent.pids && parent.pids.length > 0) {
-            document.getElementById("formFather").value = parent.pids[0];
-          }
+          if (parent.pids && parent.pids.length > 0) document.getElementById("formFather").value = parent.pids[0];
         }
       }
       recalculateFormGenerationalTitle();
@@ -1176,9 +1461,10 @@
       toggleDeceasedYear(member.status);
       document.getElementById("formBirthYear").value = member.birthYear || "";
       document.getElementById("formDeathYear").value = member.deathYear || "";
-      document.getElementById("formPhoto").value = member.photo || "";
       document.getElementById("formBio").value = member.bio || "";
-      document.getElementById("formPhone").value = member.phone || "";
+
+      document.getElementById("formPhotoData").value = member.photo || "";
+      document.getElementById("formPhotoPreview").src = getSafeAvatarUrl(member.name, member.gender, member.photo);
 
       populateParentAndSpouseOptions(member.id);
 
@@ -1194,6 +1480,10 @@
     function resetMemberForm() {
       document.getElementById("memberForm").reset();
       document.getElementById("formMemberId").value = "";
+      document.getElementById("formPhotoData").value = "";
+      document.getElementById("formPhotoFile").value = "";
+      document.getElementById("formPhotoPreview").src = getSafeAvatarUrl("", "male", "");
+      document.getElementById("formPhotoUploadStatus").textContent = "";
       toggleDeceasedYear("alive");
     }
 
@@ -1203,11 +1493,8 @@
 
     function toggleDeceasedYear(status) {
       const container = document.getElementById("deceasedYearContainer");
-      if (status === "deceased") {
-        container.classList.remove("hidden");
-      } else {
-        container.classList.add("hidden");
-      }
+      if (status === "deceased") container.classList.remove("hidden");
+      else container.classList.add("hidden");
     }
 
     function populateParentAndSpouseOptions(excludeId = null) {
@@ -1225,16 +1512,12 @@
         if (excludeId && m.id === excludeId) return;
 
         const optText = `${m.name} (Gen ${m.genNumber})`;
-        if (m.gender === "male") {
-          fatherSelect.innerHTML += `<option value="${m.id}">${optText}</option>`;
-        } else {
-          motherSelect.innerHTML += `<option value="${m.id}">${optText}</option>`;
-        }
+        if (m.gender === "male") fatherSelect.innerHTML += `<option value="${m.id}">${optText}</option>`;
+        else motherSelect.innerHTML += `<option value="${m.id}">${optText}</option>`;
         spouseSelect.innerHTML += `<option value="${m.id}">${m.name} (${m.gender === 'male' ? 'L' : 'P'})</option>`;
       });
     }
 
-    // Pratinjau Perhitungan Generasi Otomatis di Form
     function recalculateFormGenerationalTitle() {
       const fId = parseInt(document.getElementById("formFather").value);
       const mId = parseInt(document.getElementById("formMother").value);
@@ -1247,18 +1530,15 @@
       let mGen = mId ? calculateMemberDepth(mId, memberMap) : 0;
       const maxParent = Math.max(fGen, mGen);
 
-      if (maxParent > 0) {
-        calculatedGen = maxParent + 1;
-      }
+      if (maxParent > 0) calculatedGen = maxParent + 1;
 
       const titleName = generationTitles[calculatedGen] || `Generasi Ke-${calculatedGen}`;
       document.getElementById("genAutoBadge").textContent = `Otomatis: Gen ${calculatedGen}`;
       document.getElementById("genPreviewInfo").innerHTML = `
-        *Tergolong ke <strong>Generasi ${calculatedGen}</strong> dengan sebutan gelar otomatis: <strong class="text-indigo-300">${titleName}</strong>.
+        *Tergolong ke <strong>Generasi ${calculatedGen}</strong> dengan gelar: <strong class="text-indigo-300">${titleName}</strong>.
       `;
     }
 
-    // SIMPAN ANGGOTA (TAMBAH / EDIT)
     async function handleSaveMember(e) {
       e.preventDefault();
       const idVal = document.getElementById("formMemberId").value;
@@ -1273,9 +1553,8 @@
       const fId = parseInt(document.getElementById("formFather").value) || null;
       const mId = parseInt(document.getElementById("formMother").value) || null;
       const sId = parseInt(document.getElementById("formSpouse").value) || null;
-      const photo = document.getElementById("formPhoto").value.trim();
+      const photo = document.getElementById("formPhotoData").value || "";
       const bio = document.getElementById("formBio").value.trim();
-      const phone = document.getElementById("formPhone").value.trim();
 
       const newMemberObj = {
         id: memberId,
@@ -1288,8 +1567,7 @@
         mid: mId,
         pids: sId ? [sId] : [],
         photo: photo,
-        bio: bio,
-        phone: phone
+        bio: bio
       };
 
       if (isEdit) {
@@ -1299,14 +1577,11 @@
         familyData.push(newMemberObj);
       }
 
-      // Sinkronkan Pasangan Dua Arah (Bilateral Spouse)
       if (sId) {
         const spouseObj = familyData.find(m => m.id === sId);
         if (spouseObj) {
           if (!spouseObj.pids) spouseObj.pids = [];
-          if (!spouseObj.pids.includes(memberId)) {
-            spouseObj.pids.push(memberId);
-          }
+          if (!spouseObj.pids.includes(memberId)) spouseObj.pids.push(memberId);
         }
       }
 
@@ -1315,9 +1590,6 @@
       await saveToCloud();
     }
 
-    // ==========================================================
-    // HAPUS ANGGOTA BERSIH (TANPA KOLOM HANTU)
-    // ==========================================================
     function deleteCurrentFormMember() {
       const idVal = document.getElementById("formMemberId").value;
       if (idVal) {
@@ -1330,10 +1602,8 @@
       const member = familyData.find(m => m.id === memberId);
       if (!member) return;
 
-      const confirmMsg = `Yakin ingin menghapus ${member.name} dari bagan silsilah? Hubungan orang tua dan pasangan akan dilepaskan secara bersih.`;
-      if (!confirm(confirmMsg)) return;
+      if (!confirm(`Yakin ingin menghapus ${member.name}? Hubungan orang tua dan pasangan akan dilepaskan secara bersih.`)) return;
 
-      // 1. Lepas referensi dari anggota keluarga lain
       familyData.forEach(m => {
         if (m.fid === memberId) m.fid = null;
         if (m.mid === memberId) m.mid = null;
@@ -1342,7 +1612,6 @@
         }
       });
 
-      // 2. Hapus anggota dari array
       familyData = familyData.filter(m => m.id !== memberId);
 
       closeDetailDrawer();
@@ -1350,9 +1619,6 @@
       saveToCloud();
     }
 
-    // ==========================================================
-    // MODAL PENGATURAN GOOGLE SHEETS
-    // ==========================================================
     function openDatabaseModal() {
       document.getElementById("gasUrlInput").value = getGasUrl();
       document.getElementById("databaseModal").classList.remove("hidden");
@@ -1362,17 +1628,6 @@
       document.getElementById("databaseModal").classList.add("hidden");
     }
 
-    function copyShareLink() {
-      const url = document.getElementById("gasUrlInput").value.trim() || getGasUrl();
-      if (!url) { alert("Isi dan simpan URL Google Apps Script dulu."); return; }
-      const link = location.origin + location.pathname + "?gas=" + encodeURIComponent(url);
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(link).then(() => alert("Link tersalin. Buka link ini sekali di HP lain."));
-      } else {
-        prompt("Salin link ini:", link);
-      }
-    }
-
     async function saveDatabaseConfig() {
       const url = document.getElementById("gasUrlInput").value.trim();
       localStorage.setItem("FAMILY_TREE_GAS_URL", url);
@@ -1380,9 +1635,6 @@
       await fetchDataFromCloud(true);
     }
 
-    // ==========================================================
-    // MODAL GELAR GENERASI & JUDUL TRAH
-    // ==========================================================
     function openTitleEditModal() {
       document.getElementById("inputEditTitle").value = treeTitle;
       document.getElementById("inputEditDesc").value = treeDesc;
@@ -1430,7 +1682,6 @@
       await saveToCloud();
     }
 
-    // PILIH ANGGOTA CEPAT DARI DROPDOWN MENU
     function openSelectEditModal() {
       setupQuickSelectModal("Pilih Anggota untuk Diedit", (selectedId) => {
         closeQuickSelectModal();
@@ -1470,9 +1721,6 @@
       document.getElementById("quickSelectModal").classList.add("hidden");
     }
 
-    // ==========================================================
-    // BACKUP & RESTORE DATA JSON
-    // ==========================================================
     function exportDataJson() {
       const backupObj = {
         treeTitle: treeTitle,
@@ -1511,11 +1759,9 @@
             initFamilyTree();
             await saveToCloud();
             alert("Data silsilah berhasil dipulihkan!");
-          } else {
-            alert("Format berkas JSON tidak valid.");
           }
         } catch (err) {
-          alert("Gagal membaca berkas JSON: " + err.message);
+          alert("Gagal membaca berkas: " + err.message);
         }
       };
       reader.readAsText(file);
@@ -1533,7 +1779,7 @@
             birthYear: 1900,
             deathYear: 1970,
             bio: "Leluhur utama keluarga besar.",
-            photo: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80"
+            photo: ""
           }
         ];
         initFamilyTree();
@@ -1541,18 +1787,11 @@
       }
     }
 
-    // ZOOM CONTROLS
-    function zoomIn() {
-      if (tree) tree.zoom(1.2);
-    }
-    function zoomOut() {
-      if (tree) tree.zoom(0.8);
-    }
+    function zoomIn() { if (tree) tree.zoom(1.2); }
+    function zoomOut() { if (tree) tree.zoom(0.8); }
 
-    // TOGGLE MENU EDIT
     function toggleMenuEdit() {
-      const menu = document.getElementById("dropdownMenuEdit");
-      menu.classList.toggle("hidden");
+      document.getElementById("dropdownMenuEdit").classList.toggle("hidden");
     }
     function closeMenuEdit() {
       document.getElementById("dropdownMenuEdit").classList.add("hidden");
