@@ -57,11 +57,11 @@
   <!-- Kanvas Utama Pohon Silsilah -->
   <div id="tree"></div>
 
-  <!-- HEADER UTAMA (Judul, Indikator Cloud Database, Menu Edit, & Pencarian) -->
+  <!-- HEADER UTAMA -->
   <div class="fixed top-4 left-1/2 -translate-x-1/2 z-30 w-11/12 max-w-2xl">
     <div class="bg-slate-900/90 backdrop-blur-md border border-slate-700/80 rounded-2xl p-4 shadow-2xl flex flex-col gap-3">
       
-      <!-- Baris Atas: Judul Silsilah, Status Cloud, dan Menu -->
+      <!-- Baris Atas: Judul Silsilah, Status Cloud, Galeri, dan Menu -->
       <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
         <div>
           <h1 id="treeTitle" class="text-xl md:text-2xl font-bold font-outfit text-white tracking-wide flex items-center gap-2">
@@ -72,6 +72,12 @@
         </div>
 
         <div class="flex items-center gap-2">
+          <!-- Tombol Buka Galeri Foto Anggota -->
+          <button onclick="openGalleryModal()" title="Buka Album & Galeri Foto Keluarga" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/30 transition-all">
+            <i class="fa-solid fa-images"></i>
+            <span class="hidden sm:inline">Galeri Foto</span>
+          </button>
+
           <!-- Indikator Cloud Database -->
           <div id="syncBadge" title="Klik untuk atur URL Google Sheets" onclick="openDatabaseModal()" class="cursor-pointer flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-500 transition-all">
             <span id="syncDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
@@ -95,6 +101,9 @@
             <div id="dropdownMenuEdit" class="hidden absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl py-1.5 z-40 text-xs">
               <button onclick="openAddMemberModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-emerald-400">
                 <i class="fa-solid fa-user-plus w-4"></i> Tambah Anggota Baru
+              </button>
+              <button onclick="openGalleryModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-emerald-300">
+                <i class="fa-solid fa-images w-4"></i> Kelola Foto Anggota
               </button>
               <button onclick="openSelectEditModal(); closeMenuEdit();" class="w-full text-left px-3.5 py-2 hover:bg-slate-800 flex items-center gap-2.5 text-blue-400">
                 <i class="fa-solid fa-user-pen w-4"></i> Pilih & Edit Anggota
@@ -162,6 +171,137 @@
     </button>
   </div>
 
+  <!-- MODAL: GALERI & ALBUM FOTO ANGGOTA KELUARGA -->
+  <div id="galleryModal" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-5">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-4xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
+      
+      <!-- Header Galeri -->
+      <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-850">
+        <div>
+          <h2 class="text-base sm:text-lg font-bold font-outfit text-white flex items-center gap-2">
+            <i class="fa-solid fa-images text-emerald-400"></i>
+            <span>Galeri & Album Foto Keluarga</span>
+          </h2>
+          <p id="gallerySubtitle" class="text-xs text-slate-400 mt-0.5">Koleksi foto dokumentasi seluruh anggota trah keluarga</p>
+        </div>
+        <button onclick="closeGalleryModal()" class="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-800">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+      </div>
+
+      <!-- Filter & Pencarian Galeri -->
+      <div class="p-3.5 bg-slate-850 border-b border-slate-800 flex flex-col sm:flex-row gap-2.5 items-center justify-between text-xs">
+        <div class="relative w-full sm:w-72">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400"></i>
+          <input 
+            type="text" 
+            id="gallerySearchInput" 
+            placeholder="Cari foto nama anggota..." 
+            oninput="renderGalleryGrid()"
+            class="w-full bg-slate-800 border border-slate-700 focus:border-emerald-500 rounded-xl pl-9 pr-3 py-2 text-white focus:outline-none"
+          />
+        </div>
+
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <!-- Filter Generasi -->
+          <select id="galleryGenFilter" onchange="renderGalleryGrid()" class="flex-1 sm:flex-none bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 focus:outline-none">
+            <option value="all">Semua Generasi</option>
+            <option value="has_photo">Hanya yang Memiliki Foto Asli</option>
+            <option value="gen1">Generasi 1</option>
+            <option value="gen2">Generasi 2</option>
+            <option value="gen3">Generasi 3</option>
+            <option value="gen4">Generasi 4</option>
+            <option value="gen5">Generasi 5</option>
+            <option value="gen6">Generasi 6+</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Grid Foto Anggota -->
+      <div id="galleryGridContainer" class="p-4 sm:p-5 overflow-y-auto flex-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 sm:gap-4">
+        <!-- Render otomatis via JavaScript -->
+      </div>
+
+      <!-- Footer Galeri -->
+      <div class="p-3.5 border-t border-slate-800 bg-slate-850 flex items-center justify-between text-xs text-slate-400">
+        <span id="galleryStatsText">Memuat foto...</span>
+        <button onclick="closeGalleryModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl transition-all">
+          Tutup Galeri
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIGHTBOX / FULLSCREEN FOTO VIEWER -->
+  <div id="lightboxModal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-lg z-50 flex items-center justify-center p-4" onclick="closeLightbox()">
+    <div class="relative max-w-xl w-full flex flex-col items-center" onclick="event.stopPropagation()">
+      <button onclick="closeLightbox()" class="absolute -top-10 right-0 text-white/80 hover:text-white text-2xl p-2">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <img id="lightboxImg" src="" class="max-h-[75vh] w-auto max-w-full rounded-2xl shadow-2xl object-contain border-2 border-slate-700" />
+      <div class="mt-3.5 text-center">
+        <h3 id="lightboxTitle" class="text-lg font-bold font-outfit text-white">Nama Anggota</h3>
+        <p id="lightboxSubtitle" class="text-xs text-indigo-300 font-medium">Gen 1 - Leluhur</p>
+        <p id="lightboxBio" class="text-xs text-slate-400 mt-1 max-w-md mx-auto italic">Catatan</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CEPAT PASANG / GANTI FOTO DARI GALERI -->
+  <div id="quickPhotoModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl p-5 space-y-4 text-xs">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2 font-outfit">
+          <i class="fa-solid fa-camera text-indigo-400"></i> Pasang / Ganti Foto Anggota
+        </h3>
+        <button onclick="closeQuickPhotoModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <input type="hidden" id="quickPhotoMemberId" />
+      <input type="hidden" id="quickPhotoData" />
+
+      <div class="text-center space-y-2">
+        <img id="quickPhotoPreview" src="" class="w-24 h-24 mx-auto rounded-2xl object-cover border-2 border-indigo-500 bg-slate-800 shadow-lg" />
+        <h4 id="quickPhotoMemberName" class="font-bold text-sm text-white">Nama Anggota</h4>
+      </div>
+
+      <!-- Opsi 1: Upload dari File Komputer / HP -->
+      <div class="p-3 bg-slate-800/60 rounded-xl border border-slate-700 space-y-2">
+        <label class="block text-slate-300 font-semibold">Opsi 1: Ambil dari Galeri HP / Laptop</label>
+        <label for="quickPhotoFileInput" class="cursor-pointer flex items-center justify-center gap-2 w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition-all shadow-md">
+          <i class="fa-solid fa-upload"></i> Pilih Berkas Foto
+        </label>
+        <input type="file" id="quickPhotoFileInput" accept="image/*" class="hidden" onchange="handleQuickPhotoUpload(event)" />
+        <p class="text-[10px] text-slate-400 text-center">*Otomatis dikompres agar sangat ringan & muat di Google Sheets.</p>
+      </div>
+
+      <!-- Opsi 2: Tautan URL Foto / Google Drive -->
+      <div class="p-3 bg-slate-800/60 rounded-xl border border-slate-700 space-y-1.5">
+        <label class="block text-slate-300 font-semibold">Opsi 2: Link Foto Web / Google Drive (Bebas Batas Ukuran)</label>
+        <input 
+          type="url" 
+          id="quickPhotoUrlInput" 
+          placeholder="https://drive.google.com/... atau https://...foto.jpg"
+          oninput="handleQuickPhotoUrlInput(this.value)"
+          class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none"
+        />
+        <p class="text-[10px] text-slate-400">Jika memakai link Google Drive, pastikan izin file disetel <em>'Siapa saja yang memiliki link'</em>.</p>
+      </div>
+
+      <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+        <button type="button" onclick="resetToInitialAvatarInQuickPhoto()" class="text-rose-400 hover:underline">
+          Pakai Inisial Saja
+        </button>
+        <div class="flex gap-2">
+          <button type="button" onclick="closeQuickPhotoModal()" class="px-4 py-2 bg-slate-800 rounded-xl text-slate-300 font-semibold">Batal</button>
+          <button type="button" onclick="saveQuickPhoto()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl flex items-center gap-1.5">
+            <i class="fa-solid fa-check"></i> Simpan Foto
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- DRAWER DETAIL PROFIL (Sisi Kanan) -->
   <div id="detailDrawer" class="fixed top-0 right-0 h-full w-full sm:w-96 bg-slate-900/95 backdrop-blur-lg border-l border-slate-800 shadow-2xl z-40 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
     <div class="p-4 border-b border-slate-800 flex items-center justify-between">
@@ -176,11 +316,14 @@
 
     <div class="p-6 overflow-y-auto flex-1 space-y-5 text-sm">
       <div class="flex flex-col items-center text-center">
-        <div class="relative">
-          <img id="drawerAvatar" src="" alt="Avatar" class="w-28 h-28 rounded-2xl object-cover border-4 border-slate-700 shadow-lg bg-slate-800" />
+        <div class="relative group cursor-pointer" onclick="openLightboxFromDrawer()">
+          <img id="drawerAvatar" src="" alt="Avatar" class="w-28 h-28 rounded-2xl object-cover border-4 border-slate-700 shadow-lg bg-slate-800 group-hover:border-indigo-400 transition-all" />
           <span id="drawerGenderIcon" class="absolute bottom-1 right-1 w-7 h-7 rounded-full flex items-center justify-center text-white text-xs border-2 border-slate-900 bg-blue-500">
             <i class="fa-solid fa-mars"></i>
           </span>
+          <div class="absolute inset-0 bg-black/40 rounded-2xl opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs transition-opacity">
+            <i class="fa-solid fa-magnifying-glass-plus mr-1"></i> Perbesar
+          </div>
         </div>
         <h2 id="drawerName" class="text-xl font-bold font-outfit text-white mt-3">Nama Anggota</h2>
         <p id="drawerLifeSpan" class="text-xs text-slate-400 mt-0.5">1950 - Sekarang (Hidup)</p>
@@ -474,10 +617,8 @@
 
   <!-- LOGIKA JAVASCRIPT LENGKAP -->
   <script>
-    // URL Google Apps Script Web App (Bisa diisi langsung di sini atau lewat UI)
     const DEFAULT_GAS_URL = ""; 
 
-    // Daftar Preset Avatar Kartun Ringan & Rapi (Tersedia opsi Pria, Wanita, Kakek, Nenek, Anak)
     const PRESET_AVATARS = [
       { id: "m_elder", label: "Sesepuh (L)", gender: "male", url: "https://api.dicebear.com/7.x/bottts/svg?seed=Ahmad&backgroundColor=1e293b" },
       { id: "f_elder", label: "Sesepuh (P)", gender: "female", url: "https://api.dicebear.com/7.x/bottts/svg?seed=Siti&backgroundColor=1e293b" },
@@ -543,9 +684,15 @@
       document.getElementById("treeDesc").textContent = treeDesc;
     }
 
-    // GENERATOR AVATAR INISIAL RESMI (Aman dari error XML dan selalu terang)
     function getSafeAvatarUrl(name, gender, customPhoto) {
       if (customPhoto && customPhoto.trim() !== "") {
+        // Konversi format Google Drive View URL jika ada
+        if (customPhoto.includes("drive.google.com/file/d/")) {
+          const match = customPhoto.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+          if (match && match[1]) {
+            return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+          }
+        }
         return customPhoto;
       }
       const bg = gender === 'female' ? 'be185d' : '1d4ed8';
@@ -578,7 +725,6 @@
 
     function updateInitialPreview() {
       const currentVal = document.getElementById("formPhotoData").value;
-      // Jika saat ini menggunakan ui-avatars atau kosong, perbarui otomatis sesuai nama yang diketik
       if (!currentVal || currentVal.includes("ui-avatars.com")) {
         selectInitialAvatar();
       }
@@ -588,7 +734,236 @@
       updateInitialPreview();
     }
 
+    // ==========================================================
+    // FITUR GALERI FOTO ANGGOTA KELUARGA
+    // ==========================================================
+    function openGalleryModal() {
+      document.getElementById("gallerySearchInput").value = "";
+      document.getElementById("galleryGenFilter").value = "all";
+      renderGalleryGrid();
+      document.getElementById("galleryModal").classList.remove("hidden");
+    }
+
+    function closeGalleryModal() {
+      document.getElementById("galleryModal").classList.add("hidden");
+    }
+
+    function renderGalleryGrid() {
+      const query = document.getElementById("gallerySearchInput").value.toLowerCase().trim();
+      const filter = document.getElementById("galleryGenFilter").value;
+      const container = document.getElementById("galleryGridContainer");
+      const processed = computeAllGenerations(familyData);
+
+      let filtered = processed.filter(m => {
+        const matchName = (m.name && m.name.toLowerCase().includes(query)) ||
+                          (m.genTitle && m.genTitle.toLowerCase().includes(query));
+        if (!matchName) return false;
+
+        const hasRealPhoto = m.photo && m.photo.trim() !== "" && !m.photo.includes("ui-avatars.com") && !m.photo.includes("dicebear.com");
+
+        if (filter === "has_photo") return hasRealPhoto;
+        if (filter === "gen1") return m.genNumber === 1;
+        if (filter === "gen2") return m.genNumber === 2;
+        if (filter === "gen3") return m.genNumber === 3;
+        if (filter === "gen4") return m.genNumber === 4;
+        if (filter === "gen5") return m.genNumber === 5;
+        if (filter === "gen6") return m.genNumber >= 6;
+        return true;
+      });
+
+      const totalPhotos = processed.filter(m => m.photo && m.photo.trim() !== "" && !m.photo.includes("ui-avatars.com")).length;
+      document.getElementById("gallerySubtitle").textContent = `Menampilkan ${filtered.length} dari ${processed.length} anggota keluarga (${totalPhotos} anggota berfoto)`;
+      document.getElementById("galleryStatsText").textContent = `Total ${processed.length} Anggota | ${totalPhotos} Foto Asli Tersimpan`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full py-12 text-center text-slate-400">
+            <i class="fa-solid fa-camera text-4xl text-slate-600 mb-3 block"></i>
+            Tidak ada foto anggota keluarga yang cocok dengan kriteria pencarian.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(m => {
+        const photoUrl = getSafeAvatarUrl(m.name, m.gender, m.photo);
+        const hasCustomPhoto = m.photo && m.photo.trim() !== "" && !m.photo.includes("ui-avatars.com");
+        const isAlive = m.status !== "deceased";
+        let lifeSpan = m.birthYear ? `Thn ${m.birthYear}` : "?";
+        lifeSpan += isAlive ? " (Hidup)" : ` - ${m.deathYear || 'Wafat'}`;
+
+        return `
+          <div class="bg-slate-800/80 rounded-2xl border border-slate-700/80 overflow-hidden shadow-lg hover:border-indigo-500/80 transition-all flex flex-col justify-between group">
+            
+            <!-- Area Gambar Foto -->
+            <div class="relative w-full aspect-square bg-slate-900 cursor-pointer overflow-hidden" onclick="openLightbox(${m.id})">
+              <img src="${photoUrl}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              
+              <!-- Badge Generasi -->
+              <span class="absolute top-2 left-2 bg-indigo-950/90 text-indigo-300 border border-indigo-700/80 text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm">
+                Gen ${m.genNumber}
+              </span>
+
+              <!-- Badge Status Foto -->
+              ${hasCustomPhoto 
+                ? '<span class="absolute top-2 right-2 bg-emerald-950/90 text-emerald-300 border border-emerald-700 text-[9px] font-bold px-1.5 py-0.5 rounded-full"><i class="fa-solid fa-camera mr-1"></i>Foto</span>'
+                : '<span class="absolute top-2 right-2 bg-slate-900/90 text-slate-400 border border-slate-700 text-[9px] px-1.5 py-0.5 rounded-full">Avatar</span>'}
+
+              <!-- Overlay Hover Zoom -->
+              <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold transition-opacity">
+                <i class="fa-solid fa-expand mr-1.5"></i> Perbesar
+              </div>
+            </div>
+
+            <!-- Info Anggota -->
+            <div class="p-3 flex-1 flex flex-col justify-between space-y-2">
+              <div>
+                <h4 class="font-bold text-xs text-white truncate font-outfit" title="${m.name}">${m.name}</h4>
+                <p class="text-[10px] text-indigo-300 truncate font-medium">${m.genTitle}</p>
+                <p class="text-[9px] text-slate-400 mt-0.5"><i class="fa-regular fa-calendar mr-1"></i>${lifeSpan}</p>
+              </div>
+
+              <!-- Tombol Aksi Cepat -->
+              <div class="pt-2 border-t border-slate-700/60 flex items-center gap-1.5">
+                <button onclick="openQuickPhotoModal(${m.id})" title="Pasang / Ubah Foto Anggota Ini" class="flex-1 py-1.5 bg-indigo-600/80 hover:bg-indigo-600 text-white rounded-lg text-[10px] font-semibold transition-all flex items-center justify-center gap-1">
+                  <i class="fa-solid fa-camera"></i> Foto
+                </button>
+                <button onclick="jumpToTreeMember(${m.id})" title="Tampilkan Posisi di Bagan Pohon" class="px-2 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg text-[10px] font-semibold transition-all">
+                  <i class="fa-solid fa-sitemap"></i>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        `;
+      }).join("");
+    }
+
+    function jumpToTreeMember(memberId) {
+      closeGalleryModal();
+      if (tree) tree.center(memberId);
+      openDetailDrawer(memberId);
+    }
+
+    // LIGHTBOX FULLSCREEN
+    function openLightbox(memberId) {
+      const processed = computeAllGenerations(familyData);
+      const member = processed.find(m => m.id === memberId);
+      if (!member) return;
+
+      const photoUrl = getSafeAvatarUrl(member.name, member.gender, member.photo);
+      document.getElementById("lightboxImg").src = photoUrl;
+      document.getElementById("lightboxTitle").textContent = member.name;
+      document.getElementById("lightboxSubtitle").textContent = `Generasi ${member.genNumber} • ${member.genTitle}`;
+      document.getElementById("lightboxBio").textContent = member.bio || "Tidak ada catatan riwayat.";
+
+      document.getElementById("lightboxModal").classList.remove("hidden");
+    }
+
+    function openLightboxFromDrawer() {
+      if (currentSelectedMemberId) {
+        openLightbox(currentSelectedMemberId);
+      }
+    }
+
+    function closeLightbox() {
+      document.getElementById("lightboxModal").classList.add("hidden");
+    }
+
+    // MODAL CEPAT PASANG FOTO
+    function openQuickPhotoModal(memberId) {
+      const member = familyData.find(m => m.id === memberId);
+      if (!member) return;
+
+      document.getElementById("quickPhotoMemberId").value = member.id;
+      document.getElementById("quickPhotoMemberName").textContent = member.name;
+      document.getElementById("quickPhotoData").value = member.photo || "";
+      document.getElementById("quickPhotoFileInput").value = "";
+      document.getElementById("quickPhotoUrlInput").value = (member.photo && member.photo.startsWith("http") && !member.photo.includes("ui-avatars.com")) ? member.photo : "";
+      document.getElementById("quickPhotoPreview").src = getSafeAvatarUrl(member.name, member.gender, member.photo);
+
+      document.getElementById("quickPhotoModal").classList.remove("hidden");
+    }
+
+    function closeQuickPhotoModal() {
+      document.getElementById("quickPhotoModal").classList.add("hidden");
+    }
+
+    function handleQuickPhotoUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement("canvas");
+          const maxDim = 150;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > maxDim) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            }
+          } else {
+            if (height > maxDim) {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.65);
+          document.getElementById("quickPhotoData").value = compressedDataUrl;
+          document.getElementById("quickPhotoPreview").src = compressedDataUrl;
+          document.getElementById("quickPhotoUrlInput").value = "";
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleQuickPhotoUrlInput(url) {
+      if (url && url.trim() !== "") {
+        document.getElementById("quickPhotoData").value = url.trim();
+        document.getElementById("quickPhotoPreview").src = url.trim();
+      }
+    }
+
+    function resetToInitialAvatarInQuickPhoto() {
+      const memberId = parseInt(document.getElementById("quickPhotoMemberId").value);
+      const member = familyData.find(m => m.id === memberId);
+      if (member) {
+        const initialUrl = getSafeAvatarUrl(member.name, member.gender, "");
+        document.getElementById("quickPhotoData").value = initialUrl;
+        document.getElementById("quickPhotoPreview").src = initialUrl;
+        document.getElementById("quickPhotoUrlInput").value = "";
+      }
+    }
+
+    async function saveQuickPhoto() {
+      const memberId = parseInt(document.getElementById("quickPhotoMemberId").value);
+      const newPhoto = document.getElementById("quickPhotoData").value;
+
+      const idx = familyData.findIndex(m => m.id === memberId);
+      if (idx !== -1) {
+        familyData[idx].photo = newPhoto;
+        closeQuickPhotoModal();
+        renderGalleryGrid();
+        initFamilyTree();
+        await saveToCloud();
+      }
+    }
+
+    // ==========================================================
     // SINKRONISASI CLOUD DENGAN GOOGLE SHEETS
+    // ==========================================================
     async function fetchDataFromCloud(forceManualRefresh = false) {
       const gasUrl = getGasUrl();
       const syncBadge = document.getElementById("syncBadge");
@@ -663,7 +1038,6 @@
           members: familyData
         };
 
-        // Menggunakan mode: 'no-cors' agar redirect 302 dari Google Apps Script tidak diblokir oleh browser
         await fetch(gasUrl, {
           method: "POST",
           mode: "no-cors",
@@ -745,35 +1119,29 @@
       });
     }
 
-    // INISIALISASI POHON DENGAN FORMAT SVG MURNI (ANTI KOTAK GELAP / KOSONG)
+    // INISIALISASI POHON DENGAN FORMAT SVG MURNI
     function initFamilyTree() {
       const processedData = computeAllGenerations(familyData);
 
       FamilyTree.templates.customCard = Object.assign({}, FamilyTree.templates.base);
       FamilyTree.templates.customCard.size = [250, 115];
       
-      // Kotak Background
       FamilyTree.templates.customCard.node = 
         '<rect x="0" y="0" height="115" width="250" fill="#1e293b" rx="14" ry="14" stroke="#475569" stroke-width="2" class="bft-node"></rect>';
       
-      // Foto Avatar dengan ClipPath Bundar
       FamilyTree.templates.customCard.img_0 = 
         '<clipPath id="{randId}"><rect x="12" y="14" width="56" height="56" rx="12" ry="12"></rect></clipPath>' +
         '<image preserveAspectRatio="xMidYMid slice" clip-path="url(#{randId})" xlink:href="{val}" x="12" y="14" width="56" height="56"></image>';
 
-      // Baris 1: Generasi & Status Hidup
       FamilyTree.templates.customCard.field_0 = 
         '<text style="font-size: 10px; font-weight: 700; fill: #38bdf8; font-family: Inter, sans-serif;" x="78" y="27" text-anchor="start">{val}</text>';
 
-      // Baris 2: Nama Anggota (Putih Tebal, Jelas Terbaca)
       FamilyTree.templates.customCard.field_1 = 
         '<text style="font-size: 13px; font-weight: 700; fill: #ffffff; font-family: Outfit, sans-serif;" x="78" y="47" text-anchor="start">{val}</text>';
 
-      // Baris 3: Gelar Garis Keturunan
       FamilyTree.templates.customCard.field_2 = 
         '<text style="font-size: 11px; fill: #a5b4fc; font-family: Inter, sans-serif;" x="78" y="65" text-anchor="start">{val}</text>';
 
-      // Baris 4: Masa Hidup & Tautan Profil
       FamilyTree.templates.customCard.field_3 = 
         '<line x1="12" y1="80" x2="238" y2="80" stroke="#334155" stroke-width="1"></line>' +
         '<text style="font-size: 10px; fill: #94a3b8; font-family: Inter, sans-serif;" x="14" y="98" text-anchor="start">{val}</text>' +
@@ -826,7 +1194,7 @@
       });
     }
 
-    // UPLOAD FOTO DARI GALERI DENGAN KOMPRESI MAKSIMAL
+    // UPLOAD FOTO DI FORM UTAMA
     function handlePhotoUpload(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -836,7 +1204,7 @@
         const img = new Image();
         img.onload = function() {
           const canvas = document.createElement("canvas");
-          const maxDim = 150; // Kompres ke 150px agar sangat ringan (<10KB) dan muat di Google Sheets
+          const maxDim = 150;
           let width = img.width;
           let height = img.height;
 
