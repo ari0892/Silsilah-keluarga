@@ -27,6 +27,8 @@
     }
     /* Kanvas pohon dimulai tepat di bawah header (diatur otomatis oleh JS: syncTreeOffset)
        supaya header tidak pernah menutupi cabang pohon. */
+    #tree { background: #0f172a; }
+    #tree svg { background-color: transparent !important; }
     #tree {
       width: 100vw;
       height: calc(100vh - var(--tree-top, 0px));
@@ -1110,31 +1112,34 @@
       
       FamilyTree.templates.customFamilyTemplate.defs = '';
 
-      // Tampilan HTML Kartu
-      FamilyTree.templates.customFamilyTemplate.html = `
-        <div class="w-full h-full p-3.5 flex flex-col justify-between text-left text-slate-900 select-none">
+      // Tampilan HTML Kartu: isi HTML dibuat per anggota (field "html"), dibungkus foreignobject
+      FamilyTree.templates.customFamilyTemplate.html =
+        '<foreignobject class="node" x="0" y="0" width="250" height="130">{val}</foreignobject>';
+
+      const escHtml = v => String(v == null ? "" : v).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+      const buildCardHtml = d => `
+        <div xmlns="http://www.w3.org/1999/xhtml" style="width:250px;height:130px;box-sizing:border-box;" class="p-3.5 flex flex-col justify-between text-left text-slate-900 select-none">
           <div class="flex items-center gap-3">
             <div class="relative shrink-0">
-              <img src="{val:photo}" data-g="{val:memberGender}" onerror="window.photoFallback&&photoFallback(this)" class="w-12 h-12 rounded-xl object-cover border-2 bg-slate-200 {val:avatarBorderColor}" />
-              <div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] text-white {val:genderBg}">
-                <i class="fa-solid {val:genderIcon}"></i>
+              <img src="${escHtml(d.photo)}" data-g="${d.memberGender}" onerror="window.photoFallback&&photoFallback(this)" class="w-12 h-12 rounded-xl object-cover border-2 bg-slate-200 ${d.avatarBorderColor}" />
+              <div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] text-white ${d.genderBg}">
+                <i class="fa-solid ${d.genderIcon}"></i>
               </div>
             </div>
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-1.5">
-                <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full {val:badgeGenColor}">Gen {val:genNumber}</span>
-                <span class="text-[9px] text-slate-600 font-medium truncate">{val:statusText}</span>
+                <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full ${d.badgeGenColor}">Gen ${d.genNumber}</span>
+                <span class="text-[9px] text-slate-600 font-medium truncate">${escHtml(d.statusText)}</span>
               </div>
-              <h4 class="text-xs font-bold font-outfit text-slate-900 truncate mt-0.5" title="{val:name}">{val:name}</h4>
-              <p class="text-[10px] text-indigo-700 font-medium truncate">{val:genTitle}</p>
+              <h4 class="text-xs font-bold font-outfit text-slate-900 truncate mt-0.5" title="${escHtml(d.name)}">${escHtml(d.name)}</h4>
+              <p class="text-[10px] text-indigo-700 font-medium truncate">${escHtml(d.genTitle)}</p>
             </div>
           </div>
           <div class="pt-2 border-t border-amber-900/20 flex items-center justify-between text-[10px] text-slate-600">
-            <span><i class="fa-regular fa-calendar mr-1"></i>{val:lifeSpan}</span>
-            <span class="text-indigo-700 font-semibold hover:underline">Detail &rarr;</span>
+            <span><i class="fa-regular fa-calendar mr-1"></i>${escHtml(d.lifeSpan)}</span>
+            <span class="text-indigo-700 font-semibold">Detail &rarr;</span>
           </div>
-        </div>
-      `;
+        </div>`;
 
       // Transformasi Data ke Format Kartu
       const treeElements = processedData.map(m => {
@@ -1160,7 +1165,18 @@
         const colorIdx = Math.min((m.genNumber || 1) - 1, genColorPalette.length - 1);
         const chosenPalette = genColorPalette[colorIdx].split(" ");
 
+        const cardData = {
+          name: m.name, genNumber: m.genNumber, genTitle: m.genTitle,
+          statusText: isAlive ? "Hidup" : "Almarhum", lifeSpan: lifeSpan,
+          photo: getCardPhoto(m), memberGender: isMale ? "male" : "female",
+          avatarBorderColor: chosenPalette[0],
+          badgeGenColor: `${chosenPalette[1]} ${chosenPalette[2]} border border-current`,
+          genderIcon: isMale ? "fa-mars" : "fa-venus",
+          genderBg: isMale ? "bg-blue-600" : "bg-pink-600"
+        };
+
         return {
+          html: buildCardHtml(cardData),
           id: m.id,
           mid: m.mid,
           fid: m.fid,
