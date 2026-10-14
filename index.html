@@ -1106,16 +1106,16 @@
       FamilyTree.templates.customFamilyTemplate = Object.assign({}, FamilyTree.templates.tommy);
       FamilyTree.templates.customFamilyTemplate.size = [250, 130];
       FamilyTree.templates.customFamilyTemplate.node = 
-        '<rect x="0" y="0" height="130" width="250" fill="#1e293b" rx="16" ry="16" stroke="#334155" stroke-width="2" class="bft-node shadow-xl"></rect>';
+        '<rect x="0" y="0" height="130" width="250" fill="#f7f0dc" rx="16" ry="16" stroke="#e6c56a" stroke-width="2.5" class="bft-node shadow-xl"></rect>';
       
       FamilyTree.templates.customFamilyTemplate.defs = '';
 
       // Tampilan HTML Kartu
       FamilyTree.templates.customFamilyTemplate.html = `
-        <div class="w-full h-full p-3.5 flex flex-col justify-between text-left text-white select-none">
+        <div class="w-full h-full p-3.5 flex flex-col justify-between text-left text-slate-900 select-none">
           <div class="flex items-center gap-3">
             <div class="relative shrink-0">
-              <img src="{val:photo}" data-g="{val:memberGender}" onerror="window.photoFallback&&photoFallback(this)" class="w-12 h-12 rounded-xl object-cover border-2 bg-slate-700 {val:avatarBorderColor}" />
+              <img src="{val:photo}" data-g="{val:memberGender}" onerror="window.photoFallback&&photoFallback(this)" class="w-12 h-12 rounded-xl object-cover border-2 bg-slate-200 {val:avatarBorderColor}" />
               <div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] text-white {val:genderBg}">
                 <i class="fa-solid {val:genderIcon}"></i>
               </div>
@@ -1123,15 +1123,15 @@
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-1.5">
                 <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full {val:badgeGenColor}">Gen {val:genNumber}</span>
-                <span class="text-[9px] text-slate-400 truncate">{val:statusText}</span>
+                <span class="text-[9px] text-slate-600 font-medium truncate">{val:statusText}</span>
               </div>
-              <h4 class="text-xs font-bold font-outfit text-white truncate mt-0.5" title="{val:name}">{val:name}</h4>
-              <p class="text-[10px] text-indigo-300 font-medium truncate">{val:genTitle}</p>
+              <h4 class="text-xs font-bold font-outfit text-slate-900 truncate mt-0.5" title="{val:name}">{val:name}</h4>
+              <p class="text-[10px] text-indigo-700 font-medium truncate">{val:genTitle}</p>
             </div>
           </div>
-          <div class="pt-2 border-t border-slate-700/60 flex items-center justify-between text-[10px] text-slate-400">
+          <div class="pt-2 border-t border-amber-900/20 flex items-center justify-between text-[10px] text-slate-600">
             <span><i class="fa-regular fa-calendar mr-1"></i>{val:lifeSpan}</span>
-            <span class="text-indigo-400 font-semibold hover:underline">Detail &rarr;</span>
+            <span class="text-indigo-700 font-semibold hover:underline">Detail &rarr;</span>
           </div>
         </div>
       `;
@@ -1149,13 +1149,13 @@
 
         // Tentukan warna border & badge sesuai generasi
         const genColorPalette = [
-          "border-amber-400 bg-amber-950/80 text-amber-300",
-          "border-indigo-400 bg-indigo-950/80 text-indigo-300",
-          "border-sky-400 bg-sky-950/80 text-sky-300",
-          "border-emerald-400 bg-emerald-950/80 text-emerald-300",
-          "border-orange-400 bg-orange-950/80 text-orange-300",
-          "border-teal-400 bg-teal-950/80 text-teal-300",
-          "border-purple-400 bg-purple-950/80 text-purple-300"
+          "border-amber-500 bg-amber-100 text-amber-800",
+          "border-indigo-500 bg-indigo-100 text-indigo-800",
+          "border-sky-500 bg-sky-100 text-sky-800",
+          "border-emerald-500 bg-emerald-100 text-emerald-800",
+          "border-orange-500 bg-orange-100 text-orange-800",
+          "border-teal-500 bg-teal-100 text-teal-800",
+          "border-purple-500 bg-purple-100 text-purple-800"
         ];
         const colorIdx = Math.min((m.genNumber || 1) - 1, genColorPalette.length - 1);
         const chosenPalette = genColorPalette[colorIdx].split(" ");
