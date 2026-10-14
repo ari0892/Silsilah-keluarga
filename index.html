@@ -1127,12 +1127,12 @@
               </div>
             </div>
             <div class="min-w-0 flex-1">
-              <div class="flex items-center gap-1.5">
+              <h4 class="text-sm font-extrabold font-outfit text-slate-900 truncate" title="${escHtml(d.name)}">${escHtml(d.name)}</h4>
+              <div class="flex items-center gap-1.5 mt-0.5">
                 <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full ${d.badgeGenColor}">Gen ${d.genNumber}</span>
-                <span class="text-[9px] text-slate-600 font-medium truncate">${escHtml(d.statusText)}</span>
+                ${d.isAlive ? "" : '<span class="text-[9px] text-slate-600 font-medium truncate">Almarhum</span>'}
               </div>
-              <h4 class="text-xs font-bold font-outfit text-slate-900 truncate mt-0.5" title="${escHtml(d.name)}">${escHtml(d.name)}</h4>
-              <p class="text-[10px] text-indigo-700 font-medium truncate">${escHtml(d.genTitle)}</p>
+              <p class="text-[10px] text-indigo-700 font-medium truncate mt-0.5">${escHtml(d.genTitle)}</p>
             </div>
           </div>
           <div class="pt-2 border-t border-amber-900/20 flex items-center justify-between text-[10px] text-slate-600">
@@ -1167,7 +1167,7 @@
 
         const cardData = {
           name: m.name, genNumber: m.genNumber, genTitle: m.genTitle,
-          statusText: isAlive ? "Hidup" : "Almarhum", lifeSpan: lifeSpan,
+          isAlive: isAlive, lifeSpan: lifeSpan,
           photo: getCardPhoto(m), memberGender: isMale ? "male" : "female",
           avatarBorderColor: chosenPalette[0],
           badgeGenColor: `${chosenPalette[1]} ${chosenPalette[2]} border border-current`,
