@@ -752,7 +752,7 @@
           terapkanAkses();
           await fetchDataFromCloud(true);
         } else {
-          tampilkanLayarPin(j.message || "PIN salah.");
+          tampilkanLayarPin(j.code ? (j.message || "PIN salah.") : "Balasan server tidak dikenali, URL Apps Script kemungkinan bukan versi terbaru. Balasan: " + JSON.stringify(j).slice(0, 100));
         }
       } catch (err) {
         tampilkanLayarPin("Gagal menghubungi server. Cek internet lalu coba lagi.");
