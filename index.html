@@ -148,6 +148,23 @@
 </head>
 <body class="text-slate-100 select-none">
 
+  <!-- LAYAR PIN -->
+  <div id="pinModal" class="hidden fixed inset-0 z-[100] bg-slate-950 flex items-center justify-center p-4">
+    <div class="w-full max-w-xs text-center space-y-4">
+      <div class="w-16 h-16 mx-auto rounded-full bg-slate-900 border border-amber-500/40 flex items-center justify-center text-amber-400 text-2xl">
+        <i class="fa-solid fa-lock"></i>
+      </div>
+      <h2 class="font-outfit text-lg font-bold text-white">Silsilah Keluarga</h2>
+      <p class="text-xs text-slate-400">Masukkan PIN untuk membuka silsilah.</p>
+      <input type="password" id="pinInput" inputmode="numeric" autocomplete="off" placeholder="PIN"
+        class="select-text w-full text-center tracking-[0.4em] bg-slate-800 border border-slate-700 focus:border-amber-500 rounded-xl px-3 py-3 text-white text-lg focus:outline-none"
+        onkeydown="if(event.key==='Enter') submitPin()" />
+      <p id="pinError" class="hidden text-xs text-rose-400"></p>
+      <button id="pinBtn" onclick="submitPin()" class="btn-gold w-full font-semibold text-sm py-2.5 rounded-xl">Masuk</button>
+    </div>
+  </div>
+
+
   <!-- SVG Gradient Definitions untuk Garis Hubung -->
   <svg style="position: absolute; width: 0; height: 0; overflow: hidden;" aria-hidden="true">
     <defs>
@@ -223,6 +240,9 @@
 
           <button onclick="fetchDataFromCloud(true)" title="Segarkan Data Terbaru dari Google Sheets" class="header-icon-btn w-8 h-8 rounded-full flex items-center justify-center">
             <i id="refreshIcon" class="fa-solid fa-arrows-rotate text-xs"></i>
+          </button>
+          <button id="btnKunci" onclick="keluarPin()" title="Kunci / ganti PIN" class="header-icon-btn w-8 h-8 rounded-full flex items-center justify-center">
+            <i class="fa-solid fa-lock text-xs"></i>
           </button>
 
           <div class="relative">
@@ -660,6 +680,97 @@
     // (mencegah HP dengan data lama/contoh menimpa data asli)
     let cloudLoaded = false;
 
+    // ==========================================================
+    // AKSES PIN
+    // ==========================================================
+    let levelAkses = ""; // "lihat" atau "edit" (kosong = belum diperiksa)
+
+    function getPin() {
+      return localStorage.getItem("FAMILY_TREE_PIN") || "";
+    }
+
+    function tampilkanLayarPin(pesan) {
+      const ov = document.getElementById("pinModal");
+      const sudahTampil = !ov.classList.contains("hidden");
+      ov.classList.remove("hidden");
+      const err = document.getElementById("pinError");
+      if (pesan) {
+        err.textContent = pesan;
+        err.classList.remove("hidden");
+      } else if (!sudahTampil) {
+        err.classList.add("hidden");
+      }
+      if (!sudahTampil || pesan) {
+        const inp = document.getElementById("pinInput");
+        inp.value = "";
+        setTimeout(() => inp.focus(), 50);
+      }
+    }
+
+    // Tombol edit hanya muncul untuk PIN edit
+    function terapkanAkses() {
+      const bisaEdit = levelAkses === "edit";
+      ["btnMenuEdit", "drawerBtnEdit", "drawerBtnAddChild", "drawerBtnDelete"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = bisaEdit ? "" : "none";
+      });
+    }
+
+    // Memeriksa PIN tersimpan ke server. true = boleh masuk.
+    async function cekAkses() {
+      const gasUrl = getGasUrl();
+      const sep = gasUrl.includes("?") ? "&" : "?";
+      const res = await fetch(gasUrl + sep + "action=cek&pin=" + encodeURIComponent(getPin()) + "&t=" + Date.now(), { cache: "no-store" });
+      const j = await res.json();
+      if (j.status === "success") {
+        levelAkses = j.level;
+        terapkanAkses();
+        return true;
+      }
+      if (j.code === "PIN_SALAH" || j.code === "TERKUNCI") {
+        tampilkanLayarPin(j.message);
+        return false;
+      }
+      throw new Error(j.message || "Gagal memeriksa akses");
+    }
+
+    async function submitPin() {
+      const pin = document.getElementById("pinInput").value.trim();
+      if (!pin) return;
+      const btn = document.getElementById("pinBtn");
+      btn.disabled = true;
+      btn.textContent = "Memeriksa...";
+      try {
+        const gasUrl = getGasUrl();
+        const sep = gasUrl.includes("?") ? "&" : "?";
+        const res = await fetch(gasUrl + sep + "action=cek&pin=" + encodeURIComponent(pin) + "&t=" + Date.now(), { cache: "no-store" });
+        const j = await res.json();
+        if (j.status === "success") {
+          localStorage.setItem("FAMILY_TREE_PIN", pin);
+          levelAkses = j.level;
+          document.getElementById("pinModal").classList.add("hidden");
+          terapkanAkses();
+          await fetchDataFromCloud(true);
+        } else {
+          tampilkanLayarPin(j.message || "PIN salah.");
+        }
+      } catch (err) {
+        tampilkanLayarPin("Gagal menghubungi server. Cek internet lalu coba lagi.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Masuk";
+      }
+    }
+
+    function keluarPin() {
+      localStorage.removeItem("FAMILY_TREE_PIN");
+      levelAkses = "";
+      cloudLoaded = false;
+      terapkanAkses();
+      tampilkanLayarPin("");
+    }
+
+
     // Gelar bawaan per tingkatan generasi
     const defaultGenerationTitles = {
       1: "Leluhur / Moyang",
@@ -862,6 +973,7 @@
     async function initApp() {
       loadLocalConfig();
       renderAppHeader();
+      terapkanAkses();
       syncTreeOffset();
       window.addEventListener("resize", syncTreeOffset);
       if (window.ResizeObserver) new ResizeObserver(syncTreeOffset).observe(document.getElementById("appHeader"));
@@ -907,11 +1019,22 @@
       if (refreshIcon) refreshIcon.classList.add("fa-spin");
 
       if (!gasUrl) {
-        // Jika belum ada URL Google Sheets, pakai LocalStorage / Sample
+        // Jika belum ada URL Google Sheets, pakai LocalStorage / Sample (mode lokal, tanpa PIN)
+        levelAkses = "edit";
+        terapkanAkses();
         syncDot.className = "w-2 h-2 rounded-full bg-amber-400";
         syncText.textContent = "Mode Offline (Lokal)";
         syncBadge.title = "Belum terhubung ke Google Sheets. Klik untuk pasang URL.";
         loadFromLocalStorageOrSample();
+        if (refreshIcon) refreshIcon.classList.remove("fa-spin");
+        return;
+      }
+
+      // Belum pernah memasukkan PIN di perangkat ini -> minta PIN dulu
+      if (!getPin() && !levelAkses) {
+        tampilkanLayarPin("");
+        syncDot.className = "w-2 h-2 rounded-full bg-rose-400";
+        syncText.textContent = "Terkunci";
         if (refreshIcon) refreshIcon.classList.remove("fa-spin");
         return;
       }
@@ -922,10 +1045,32 @@
       }
 
       try {
+        if (!levelAkses) {
+          const ok = await cekAkses();
+          if (!ok) {
+            syncDot.className = "w-2 h-2 rounded-full bg-rose-400";
+            syncText.textContent = "Terkunci";
+            return;
+          }
+        }
+
         const sep = gasUrl.includes("?") ? "&" : "?";
-        const response = await fetch(gasUrl + sep + "t=" + Date.now(), { method: "GET", cache: "no-store" });
+        const response = await fetch(gasUrl + sep + "pin=" + encodeURIComponent(getPin()) + "&t=" + Date.now(), { method: "GET", cache: "no-store" });
         if (!response.ok) throw new Error("Gagal mengambil data dari Google Sheets");
         const cloudData = await response.json();
+
+        // Server menolak: JANGAN dianggap Sheet kosong (supaya data asli tidak tertimpa)
+        if (cloudData && cloudData.status === "error") {
+          if (cloudData.code === "PIN_SALAH" || cloudData.code === "TERKUNCI") {
+            levelAkses = "";
+            tampilkanLayarPin(cloudData.message);
+            syncDot.className = "w-2 h-2 rounded-full bg-rose-400";
+            syncText.textContent = "Terkunci";
+            return;
+          }
+          throw new Error(cloudData.message || "Server mengembalikan error");
+        }
+
         const cloudMembers = normalizeMembers(cloudData && cloudData.members);
 
         if (cloudMembers.length > 0) {
@@ -955,7 +1100,7 @@
           syncDot.className = "w-2 h-2 rounded-full bg-emerald-400";
           syncText.textContent = "Sheet Baru Diinisialisasi";
           loadFromLocalStorageOrSample();
-          await saveToCloud();
+          if (levelAkses === "edit") await saveToCloud();
         }
       } catch (err) {
         console.warn("Koneksi cloud gagal:", err);
@@ -979,6 +1124,13 @@
 
       if (!gasUrl) return;
 
+      if (levelAkses !== "edit") {
+        syncDot.className = "w-2 h-2 rounded-full bg-rose-400";
+        syncText.textContent = "Hanya Lihat";
+        alert("Perubahan tidak disimpan ke cloud karena PIN ini hanya untuk melihat.");
+        return;
+      }
+
       if (!cloudLoaded) {
         syncDot.className = "w-2 h-2 rounded-full bg-rose-400";
         syncText.textContent = "Belum Tersambung";
@@ -991,6 +1143,7 @@
 
       try {
         const payload = {
+          pin: getPin(),
           treeTitle: treeTitle,
           treeDesc: treeDesc,
           generationTitles: generationTitles,
@@ -998,11 +1151,23 @@
         };
 
         // Kirim via POST (text/plain menghindari preflight CORS di Google Apps Script)
-        await fetch(gasUrl, {
+        const res = await fetch(gasUrl, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify(payload)
         });
+
+        // Baca balasan server: jangan anggap tersimpan kalau server menolak
+        let hasil = null;
+        try { hasil = await res.json(); } catch (e) {}
+        if (hasil && hasil.status === "error") {
+          if (hasil.code === "PIN_SALAH" || hasil.code === "TERKUNCI") {
+            levelAkses = "";
+            tampilkanLayarPin(hasil.message);
+          }
+          throw new Error(hasil.message || "Server menolak penyimpanan");
+        }
+        if (!hasil || hasil.status !== "success") throw new Error("Balasan server tidak dikenali");
 
         syncDot.className = "w-2 h-2 rounded-full bg-emerald-400";
         syncText.textContent = "Tersimpan Permanen";
@@ -1010,6 +1175,7 @@
         console.error("Gagal simpan ke Google Sheets:", err);
         syncDot.className = "w-2 h-2 rounded-full bg-rose-400";
         syncText.textContent = "Gagal Simpan ke Cloud";
+        showError("Gagal simpan ke cloud: " + (err && err.message ? err.message : err));
       }
     }
 
@@ -1636,11 +1802,12 @@
       if (!url) { out.textContent = "URL belum diisi."; return; }
       out.textContent = "Menguji...";
       try {
-        const res = await fetch(url + (url.includes("?") ? "&" : "?") + "t=" + Date.now(), { cache: "no-store" });
+        const res = await fetch(url + (url.includes("?") ? "&" : "?") + "pin=" + encodeURIComponent(getPin()) + "&t=" + Date.now(), { cache: "no-store" });
         const text = await res.text();
         let msg = "HTTP " + res.status + "\nUkuran respons: " + text.length + " karakter\n";
         try {
           const j = JSON.parse(text);
+          if (j.status === "error") { out.textContent = msg + "Server menolak: " + (j.message || j.code); return; }
           const n = normalizeMembers(j.members).length;
           msg += "JSON valid. Jumlah anggota: " + n + "\n";
           if (n === 0) msg += "Sheet masih kosong (atau data lama ada di sheet lain). Aman: tekan Segarkan, data lokal akan dikirim.";
